@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { WebR } from "@r-wasm/webr";
 import { Box, Fab, Stack, Typography } from "@mui/material";
 import { PlayArrow } from "@mui/icons-material";
@@ -7,58 +7,69 @@ import { darkTheme, lightTheme } from "./../appTheme";
 const webR = new WebR();
 
 const WebRRunner = ({ code, isDarkMode }) => {
+  const [output, setOutput] = useState("Ready to run code");
   const canvasRef = useRef(null);
   const theme = isDarkMode ? darkTheme : lightTheme;
 
-  // Initialize WebR only once when the component mounts
   useEffect(() => {
     const initWebR = async () => {
       try {
-        // Initialize WebR environment
         await webR.init();
         console.log("WebR initialized");
       } catch (err) {
         console.error("WebR initialization failed:", err);
+        setOutput(`Error initializing WebR: ${err.message}`);
       }
     };
     initWebR();
-  }, []); // Empty dependency array means this runs once on mount
+  }, []);
 
-  // Function to run R code
   const runCode = async () => {
     try {
-      // Set the default graphics device to webr::canvas
-      await webR.evalRVoid('options(device=webr::canvas)');
+      setOutput("Running...");
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Handle webR output messages in an async loop
+      // Use webr::canvas device for live plotting
+      await webR.evalRVoid("options(device = webr::canvas)");
+
+      let isPlottable = /\b(plot|hist|boxplot|barplot|image)\s*\(/i.test(code);
+
+      // Setup canvas listening loop
       (async () => {
         for (;;) {
           const output = await webR.read();
-          switch (output.type) {
-            case 'canvas':
-              if (output.data.event === 'canvasImage') {
-                // Add plot image data to the current canvas element
-                const canvas = canvasRef.current;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(output.data.image, 0, 0);
-              } else if (output.data.event === 'canvasNewPage') {
-                // Clear the canvas for a new plot
-                const canvas = canvasRef.current;
-                const ctx = canvas.getContext('2d');
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-              }
-              break;
-            default:
-              console.log(output);
+          if (output.type === "canvas") {
+            if (output.data.event === "canvasImage") {
+              const image = output.data.image;
+              ctx.drawImage(image, 0, 0);
+            } else if (output.data.event === "canvasNewPage") {
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+          } else {
+            console.log("Other output:", output);
           }
         }
       })();
 
-      // Evaluate the R code
+
       await webR.evalRVoid(code);
+
+      // Capture textual result
+      const result = await webR.evalR(code);
+      const jsResult = await result.toJs();
+      const stringResult = JSON.stringify(jsResult, null, 2);
+
+      // Show text if not a plot
+      if (!isPlottable) {
+        setOutput(<pre>{stringResult}</pre>);
+      } else {
+        setOutput(null);
+      }
     } catch (err) {
-      // Handle errors gracefully
       console.error("WebR Error:", err);
+      setOutput(`Error: ${err.message}`);
     }
   };
 
@@ -115,13 +126,27 @@ const WebRRunner = ({ code, isDarkMode }) => {
           height: "75%",
           bgcolor: theme.palette.background.paper,
           zIndex: 1,
+          padding: "20px",
         }}
       >
+        {output && typeof output === "string" ? (
+          <Typography
+            fontWeight="bold"
+            sx={{
+              color: theme.palette.primary.contrastText,
+              whiteSpace: "pre-wrap",
+            }}
+          >
+            {output}
+          </Typography>
+        ) : (
+          output
+        )}
         <canvas
           ref={canvasRef}
           width="1008"
           height="1008"
-          style={{ width: "450px", height: "450px", display: "inline-block" }}
+          style={{ width: "450px", height: "450px", display: "block", marginTop: "10px" }}
         />
       </Box>
     </Box>

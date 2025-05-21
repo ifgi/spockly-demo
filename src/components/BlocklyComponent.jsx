@@ -76,6 +76,8 @@ const BlocklyComponent = ({ setCode, isDarkMode, workspaceRef }) => {
           <block type="summary_statistics"></block>
           <block type="quantile_column"></block>
           <block type="sorted_element_at"></block>
+          <block type="show_rows"></block>
+          <block type="summarize_data"></block>
         </category>
 
         <category name="Modeling" colour="#A1887F">

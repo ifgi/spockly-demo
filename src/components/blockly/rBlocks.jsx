@@ -296,6 +296,8 @@ Blockly.defineBlocksWithJsonArray([
   }
 ]);
 
+
+
 // --- Modeling ---
 Blockly.defineBlocksWithJsonArray([
   {
@@ -591,3 +593,114 @@ Blockly.Generator.R.forBlock["text_print"] = function (block, generator) {
 		'""';
 	return `print(${text})\n`;
 };
+
+
+// --------RGENERATOR LOAD DATA-----------
+
+// Generator for load_csv block
+Blockly.Generator.R.forBlock['load_csv'] = function(block) {
+  var filename = block.getFieldValue('FILENAME');
+  Blockly.Generator.R.addLibrary('readr');
+  
+  var code = 'read_csv("' + filename + '")';
+  return [code, Blockly.Generator.R.ORDER_FUNCTION_CALL];
+};
+
+// Generator for load_shapefile block
+Blockly.Generator.R.forBlock['load_shapefile'] = function(block) {
+  var filename = block.getFieldValue('FILENAME');
+  Blockly.Generator.R.addLibrary('sf');
+  
+  var code = 'st_read("' + filename + '")';
+  return [code, Blockly.Generator.R.ORDER_FUNCTION_CALL];
+};
+
+// Generator for load_raster block
+Blockly.Generator.R.forBlock['load_raster'] = function(block) {
+  var filename = block.getFieldValue('FILENAME');
+  Blockly.Generator.R.addLibrary('stars');
+  
+  var code = 'read_stars("' + filename + '")';
+  return [code, Blockly.Generator.R.ORDER_FUNCTION_CALL];
+};
+
+// Generator for load_builtin_dataset block
+Blockly.Generator.R.forBlock["load_builtin_dataset"] = function(block) {
+  const dataset = block.getFieldValue("DATASET");
+  return `data <- ${dataset}\n`;
+};
+
+// Generator for get_dataset block
+Blockly.Generator.R.forBlock['get_dataset'] = function(block) {
+  var dataset = block.getFieldValue('DATASET');
+  var code = dataset;
+  return [code, Blockly.Generator.R.ORDER_ATOMIC];
+};
+
+
+
+//-----RGENERATOR DATA MANIPULATION ----
+
+//read inbuilt dataset
+Blockly.defineBlocksWithJsonArray([
+  {
+    type: "show_rows",
+    message0: "show first %1 rows of loaded data",
+    args0: [
+      {
+        type: "field_number",
+        name: "ROWS",
+        value: 5,
+        min: 1,
+        max: 1000
+      }
+    ],
+    previousStatement: null,
+    nextStatement: null,
+    colour: 160,
+    tooltip: "Show the first n rows of the loaded dataset",
+    helpUrl: ""
+  }
+]);
+Blockly.Generator.R.forBlock["show_rows"] = function(block) {
+  const rows = block.getFieldValue("ROWS");
+  const code = `head(data, ${rows})\n`;
+  return code;
+};
+
+
+//summarize builtin data
+Blockly.defineBlocksWithJsonArray([
+  {
+    type: "summarize_data",
+    message0: "summarize loaded data",
+    previousStatement: null,
+    nextStatement: null,
+    colour: 230,
+    tooltip: "Generate a summary of the loaded dataset using summary()",
+    helpUrl: ""
+  }
+]);
+Blockly.Generator.R.forBlock["summarize_data"] = function(block) {
+  const code = `summary(data)\n`;
+  return code;
+};
+
+//check or show data structure
+Blockly.defineBlocksWithJsonArray([
+  {
+    type: "show_structure",
+    message0: "show structure of loaded dataset",
+    previousStatement: null,
+    nextStatement: null,
+    colour: 210,
+    tooltip: "Show the structure of the loaded dataset (e.g., columns, types)",
+    helpUrl: ""
+  }
+]);
+Blockly.Generator.R.forBlock["show_structure"] = function(block) {
+  const code = `str(data)\n`;
+  return code;
+};
+
+

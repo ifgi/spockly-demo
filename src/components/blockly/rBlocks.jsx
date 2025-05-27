@@ -135,6 +135,51 @@ Blockly.defineBlocksWithJsonArray([
   }
 ]);
 
+
+// --------RGENERATOR LOAD DATA-----------
+
+// Generator for load_csv block
+Blockly.Generator.R.forBlock['load_csv'] = function(block) {
+  var filename = block.getFieldValue('FILENAME');
+  Blockly.Generator.R.addLibrary('readr');
+  
+  var code = 'read_csv("' + filename + '")';
+  return [code, Blockly.Generator.R.ORDER_FUNCTION_CALL];
+};
+
+// Generator for load_shapefile block
+Blockly.Generator.R.forBlock['load_shapefile'] = function(block) {
+  var filename = block.getFieldValue('FILENAME');
+  Blockly.Generator.R.addLibrary('sf');
+  
+  var code = 'st_read("' + filename + '")';
+  return [code, Blockly.Generator.R.ORDER_FUNCTION_CALL];
+};
+
+// Generator for load_raster block
+Blockly.Generator.R.forBlock['load_raster'] = function(block) {
+  var filename = block.getFieldValue('FILENAME');
+  Blockly.Generator.R.addLibrary('stars');
+  
+  var code = 'read_stars("' + filename + '")';
+  return [code, Blockly.Generator.R.ORDER_FUNCTION_CALL];
+};
+
+// Generator for load_builtin_dataset block
+Blockly.Generator.R.forBlock["load_builtin_dataset"] = function(block) {
+  const dataset = block.getFieldValue("DATASET");
+  return `data <- ${dataset}\n`;
+};
+
+// Generator for get_dataset block
+Blockly.Generator.R.forBlock['get_dataset'] = function(block) {
+  var dataset = block.getFieldValue('DATASET');
+  var code = dataset;
+  return [code, Blockly.Generator.R.ORDER_ATOMIC];
+};
+
+
+
 // --- Transformations ---
 Blockly.defineBlocksWithJsonArray([
   {
@@ -144,25 +189,6 @@ Blockly.defineBlocksWithJsonArray([
     output: null,
     colour: "#FFD54F",
     tooltip: "Filter rows from a dataframe",
-  },
-  {
-    type: "select_columns",
-    message0: "select columns %1",
-    args0: [{ type: "field_input", name: "COLUMNS", text: "col1, col2" }],
-    output: null,
-    colour: "#FFD54F",
-    tooltip: "Select specific columns from a dataframe",
-  },
-  {
-    type: "group_by_summarise",
-    message0: "group by %1 and summarise %2",
-    args0: [
-      { type: "field_input", name: "GROUP_COL", text: "group" },
-      { type: "field_input", name: "SUMMARISE", text: "mean(value)" }
-    ],
-    output: null,
-    colour: "#FFD54F",
-    tooltip: "Group and summarise a dataset",
   },
   {
     type: "subset_rows",
@@ -192,6 +218,9 @@ Blockly.defineBlocksWithJsonArray([
     tooltip: "Access a column range from a dataframe"
   }
 ]);
+
+
+// --------RGENERATOR TRANSFORMATION----------
 
 // --- Math ---
 Blockly.defineBlocksWithJsonArray([
@@ -244,58 +273,157 @@ Blockly.defineBlocksWithJsonArray([
   }
 ]);
 
+// --------RGENERATOR MATH----------
+
 // --- Statistics ---
 Blockly.defineBlocksWithJsonArray([
   {
-    type: "calculate_mean",
-    message0: "mean of %1",
-    args0: [{ type: "input_value", name: "COLUMN" }],
-    output: null,
-    previousStatement: null,
-    nextStatement: null,
-    colour: "#BA68C8",
-    tooltip: "Calculate mean of a column",
+    "type": "calculate_sd",
+    "message0": "standard deviation of %1",
+    "args0": [{"type": "input_value", "name": "COLUMN"}],
+    "output": null,
+    "colour": "#BA68C8",
+    "tooltip": "Calculate standard deviation"
   },
   {
-    type: "calculate_sd",
-    message0: "standard deviation of %1",
-    args0: [{ type: "input_value", name: "COLUMN" }],
-    output: null,
-    colour: "#BA68C8",
-    tooltip: "Calculate standard deviation",
-  },
-  {
-    type: "summary_statistics",
-    message0: "summary of %1",
-    args0: [{ type: "input_value", name: "DATA" }],
-    output: null,
-    colour: "#BA68C8",
-    tooltip: "Show summary statistics",
-  },
-  {
-    type: "quantile_column",
-    message0: "quantile of %1 at %2",
-    args0: [
-      { type: "input_value", name: "VECTOR" },
-      { type: "field_input", name: "VALUES", text: "0.1, 0.5, 0.9" }
+    "type": "quantile_column",
+    "message0": "quantile of %1 at %2",
+    "args0": [
+      {"type": "input_value", "name": "VECTOR"},
+      {"type": "field_input", "name": "VALUES", "text": "0.1, 0.5, 0.9"}
     ],
-    output: null,
-    colour: "#BA68C8",
-    tooltip: "Compute quantiles at given probabilities",
+    "output": null,
+    "colour": "#BA68C8",
+    "tooltip": "Compute quantiles at given probabilities"
   },
   {
-    type: "sorted_element_at",
-    message0: "sorted element of %1 at position %2",
-    args0: [
-      { type: "input_value", name: "VECTOR" },
-      { type: "field_number", name: "INDEX", value: 1 }
+    "type": "sorted_element_at",
+    "message0": "sorted element of %1 at position %2",
+    "args0": [
+      {"type": "input_value", "name": "VECTOR"},
+      {"type": "field_number", "name": "INDEX", "value": 1}
     ],
-    output: null,
-    colour: "#BA68C8",
-    tooltip: "Access an element from sorted vector",
+    "output": null,
+    "colour": "#BA68C8",
+    "tooltip": "Access an element from sorted vector"
+  },
+  {
+    "type": "summarize_data",
+    "message0": "summarize loaded data",
+    "previousStatement": null,
+    "nextStatement": null,
+    "colour": "#BA68C8",
+    "tooltip": "Generate a summary of the loaded dataset using summary()"
+  },
+  {
+    "type": "calculate_mean",
+    "message0": "mean of %1",
+    "args0": [{
+      "type": "field_dropdown", 
+      "name": "COLUMN",
+      "options": [["Select column", ""]]
+    }],
+    "previousStatement": null,
+    "nextStatement": null,
+    "colour": "#BA68C8",
+    "tooltip": "Calculate mean of a column, respecting grouping if present",
+    "extensions": ["dynamic_column_dropdown"]
   }
 ]);
 
+/*
+
+// --- Dynamic Column Extension ---
+Blockly.Extensions.register('dynamic_column_dropdown', function() {
+  const block = this;
+  
+  // Get available columns from loaded dataset
+  block.getLoadedDatasetColumns = function() {
+    const blocks = this.workspace.getAllBlocks(false);
+    for (let i = blocks.length - 1; i >= 0; i--) {
+      const block = blocks[i];
+      if (block.type === 'load_builtin_dataset' && block.getFieldValue) {
+        const dataset = block.getFieldValue("DATASET");
+        return datasetColumnsMap[dataset] || [];
+      }
+    }
+    return [];
+  };
+
+  // Update the dropdown options
+  block.updateDropdown = function() {
+    const dropdown = this.getField('COLUMN');
+    const currentVal = dropdown.getValue();
+    const columns = this.getLoadedDatasetColumns();
+    const newOptions = columns.length > 0 ? columns : [['Select column', '']];
+    
+    dropdown.menuGenerator_ = newOptions;
+    if (newOptions.some(opt => opt[1] === currentVal)) {
+      dropdown.setValue(currentVal);
+    }
+  };
+
+  // Initialize and set up change listener
+  block.updateDropdown();
+  block.workspace.addChangeListener(function(event) {
+    if (event.type === Blockly.Events.BLOCK_CHANGE || 
+        event.type === Blockly.Events.BLOCK_CREATE ||
+        event.type === Blockly.Events.BLOCK_DELETE) {
+      block.updateDropdown();
+    }
+  });
+});*/
+
+
+// --------RGENERATOR FOR STATISTICS BLOCKS---------
+
+//summarize builtin data
+Blockly.Generator.R.forBlock["summarize_data"] = function(block) {
+  const code = `summary(data)\n`;
+  return code;
+};
+
+//calculate_sd
+Blockly.Generator.R.forBlock["calculate_sd"] = function(block) {
+  const column = Blockly.Generator.R.valueToCode(block, 'COLUMN', 
+    Blockly.Generator.R.ORDER_NONE) || 'NA';
+  return [`sd(${column}, na.rm = TRUE)`, Blockly.Generator.R.ORDER_FUNCTION_CALL];
+};
+
+//quantile_column
+Blockly.Generator.R.forBlock["quantile_column"] = function(block) {
+  const vector = Blockly.Generator.R.valueToCode(block, 'VECTOR', 
+    Blockly.Generator.R.ORDER_NONE) || 'NA';
+  const values = block.getFieldValue('VALUES');
+  return [`quantile(${vector}, probs = c(${values}), na.rm = TRUE)`, 
+    Blockly.Generator.R.ORDER_FUNCTION_CALL];
+};
+
+//sorted_element
+Blockly.Generator.R.forBlock["sorted_element_at"] = function(block) {
+  const vector = Blockly.Generator.R.valueToCode(block, 'VECTOR', 
+    Blockly.Generator.R.ORDER_NONE) || 'NA';
+  const index = block.getFieldValue('INDEX');
+  return [`sort(${vector}, na.last = TRUE)[${index}]`, 
+    Blockly.Generator.R.ORDER_FUNCTION_CALL];
+};
+
+//mean calculator
+Blockly.Generator.R.forBlock["calculate_mean"] = function(block) {
+  const column = block.getFieldValue("COLUMN");
+  
+  return `
+# Calculate mean of ${column}
+if (!exists("data")) stop("No data available")
+if (!"${column}" %in% names(data)) stop("Column '${column}' not found")
+
+if (exists("grouped")) {
+  print(lapply(grouped, function(df) mean(df[["${column}"]], na.rm = TRUE)))
+} else {
+  print(mean(data[["${column}"]], na.rm = TRUE))
+}
+`;
+};
 
 
 // --- Modeling ---
@@ -595,53 +723,7 @@ Blockly.Generator.R.forBlock["text_print"] = function (block, generator) {
 };
 
 
-// --------RGENERATOR LOAD DATA-----------
-
-// Generator for load_csv block
-Blockly.Generator.R.forBlock['load_csv'] = function(block) {
-  var filename = block.getFieldValue('FILENAME');
-  Blockly.Generator.R.addLibrary('readr');
-  
-  var code = 'read_csv("' + filename + '")';
-  return [code, Blockly.Generator.R.ORDER_FUNCTION_CALL];
-};
-
-// Generator for load_shapefile block
-Blockly.Generator.R.forBlock['load_shapefile'] = function(block) {
-  var filename = block.getFieldValue('FILENAME');
-  Blockly.Generator.R.addLibrary('sf');
-  
-  var code = 'st_read("' + filename + '")';
-  return [code, Blockly.Generator.R.ORDER_FUNCTION_CALL];
-};
-
-// Generator for load_raster block
-Blockly.Generator.R.forBlock['load_raster'] = function(block) {
-  var filename = block.getFieldValue('FILENAME');
-  Blockly.Generator.R.addLibrary('stars');
-  
-  var code = 'read_stars("' + filename + '")';
-  return [code, Blockly.Generator.R.ORDER_FUNCTION_CALL];
-};
-
-// Generator for load_builtin_dataset block
-Blockly.Generator.R.forBlock["load_builtin_dataset"] = function(block) {
-  const dataset = block.getFieldValue("DATASET");
-  return `data <- ${dataset}\n`;
-};
-
-// Generator for get_dataset block
-Blockly.Generator.R.forBlock['get_dataset'] = function(block) {
-  var dataset = block.getFieldValue('DATASET');
-  var code = dataset;
-  return [code, Blockly.Generator.R.ORDER_ATOMIC];
-};
-
-
-
-//-----RGENERATOR DATA MANIPULATION ----
-
-//read inbuilt dataset
+//block read inbuilt dataset
 Blockly.defineBlocksWithJsonArray([
   {
     type: "show_rows",
@@ -657,7 +739,7 @@ Blockly.defineBlocksWithJsonArray([
     ],
     previousStatement: null,
     nextStatement: null,
-    colour: 160,
+    colour: "#90A4AE",
     tooltip: "Show the first n rows of the loaded dataset",
     helpUrl: ""
   }
@@ -667,33 +749,41 @@ Blockly.Generator.R.forBlock["show_rows"] = function(block) {
   const code = `head(data, ${rows})\n`;
   return code;
 };
-
-
-//summarize builtin data
+// block read tail of the inbuilt dataset
 Blockly.defineBlocksWithJsonArray([
   {
-    type: "summarize_data",
-    message0: "summarize loaded data",
+    type: "show_tail",
+    message0: "tail %1 rows of loaded data",
+    args0: [
+      {
+        type: "field_number",
+        name: "ROWS",
+        value: 5,
+        min: 1,
+        max: 1000
+      }
+    ],
     previousStatement: null,
     nextStatement: null,
-    colour: 230,
-    tooltip: "Generate a summary of the loaded dataset using summary()",
+    colour: "#90A4AE",
+    tooltip: "Show tail n rows of the loaded dataset",
     helpUrl: ""
   }
 ]);
-Blockly.Generator.R.forBlock["summarize_data"] = function(block) {
-  const code = `summary(data)\n`;
+Blockly.Generator.R.forBlock["show_tail"] = function(block) {
+  const rows = block.getFieldValue("ROWS");
+  const code = `tail(data, ${rows})\n`;
   return code;
 };
 
-//check or show data structure
+//block check or show data structure
 Blockly.defineBlocksWithJsonArray([
   {
     type: "show_structure",
     message0: "show structure of loaded dataset",
     previousStatement: null,
     nextStatement: null,
-    colour: 210,
+    colour: "#90A4AE",
     tooltip: "Show the structure of the loaded dataset (e.g., columns, types)",
     helpUrl: ""
   }
@@ -702,5 +792,287 @@ Blockly.Generator.R.forBlock["show_structure"] = function(block) {
   const code = `str(data)\n`;
   return code;
 };
+
+
+
+// Column mapping for R inbuilt datasets
+const datasetColumnsMap = {
+  iris: [
+    ['Sepal.Length', 'Sepal.Length'],
+    ['Sepal.Width', 'Sepal.Width'],
+    ['Petal.Length', 'Petal.Length'],
+    ['Petal.Width', 'Petal.Width'],
+    ['Species', 'Species']
+  ],
+  mtcars: [
+    ['mpg', 'mpg'],
+    ['cyl', 'cyl'],
+    ['disp', 'disp'],
+    ['hp', 'hp'],
+    ['drat', 'drat'],
+    ['wt', 'wt'],
+    ['qsec', 'qsec'],
+    ['vs', 'vs'],
+    ['am', 'am'],
+    ['gear', 'gear'],
+    ['carb', 'carb']
+  ],
+  airquality: [
+    ['Ozone', 'Ozone'],
+    ['Solar.R', 'Solar.R'],
+    ['Wind', 'Wind'],
+    ['Temp', 'Temp'],
+    ['Month', 'Month'],
+    ['Day', 'Day']
+  ]
+};
+
+// Define the block to select columns
+Blockly.Blocks['select_columns'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("select columns")
+        .appendField(new Blockly.FieldDropdown(this.getColumnOptions.bind(this)), "COLUMN1")
+        .appendField(",")
+        .appendField(new Blockly.FieldDropdown(this.getColumnOptions.bind(this)), "COLUMN2");
+    this.setInputsInline(true);
+    this.setPreviousStatement(true, null); 
+    this.setNextStatement(true, null);     
+    this.setColour("#FFD54F"); 
+    this.setTooltip("Select two columns from the loaded dataset");
+    this.setHelpUrl("");
+
+    this.workspace.addChangeListener(this.onWorkspaceChange.bind(this));
+  },
+
+  getColumnOptions: function() {
+    const defaultColumns = [['col1', 'col2']];
+    const loadedDataset = this.getLoadedDatasetColumns();
+    return loadedDataset.length > 0 ? loadedDataset : defaultColumns;
+  },
+  getLoadedDatasetColumns: function() {
+    const blocks = this.workspace.getAllBlocks(false);
+    for (let i = blocks.length - 1; i >= 0; i--) {
+      const block = blocks[i];
+      if (block.type === 'load_builtin_dataset' && block.getFieldValue) {
+        const datasetName = block.getFieldValue('DATASET');
+        if (datasetColumnsMap[datasetName]) {
+          return datasetColumnsMap[datasetName];
+        }
+      }
+    }
+    return [];
+  },
+  onWorkspaceChange: function(event) {
+    if (event.type === Blockly.Events.BLOCK_CHANGE || 
+        event.type === Blockly.Events.BLOCK_CREATE ||
+        event.type === Blockly.Events.BLOCK_DELETE) {
+      this.updateDropdowns();
+    }
+  },
+
+  updateDropdowns: function() {
+    const newOptions = this.getColumnOptions();
+    const dropdown1 = this.getField('COLUMN1');
+    const dropdown2 = this.getField('COLUMN2');
+    
+    if (dropdown1 && dropdown2) {
+      const currentVal1 = dropdown1.getValue();
+      const currentVal2 = dropdown2.getValue();
+
+      dropdown1.menuGenerator_ = newOptions;
+      dropdown2.menuGenerator_ = newOptions;
+
+      const optionValues = newOptions.map(option => option[1]);
+      if (optionValues.includes(currentVal1)) {
+        dropdown1.setValue(currentVal1);
+      }
+      if (optionValues.includes(currentVal2)) {
+        dropdown2.setValue(currentVal2);
+      }
+    }
+  }
+};
+
+Blockly.Generator.R.forBlock["select_columns"] = function(block) {
+  const column1 = block.getFieldValue("COLUMN1");
+  const column2 = block.getFieldValue("COLUMN2");
+  return `selected_data <- data[c("${column1}", "${column2}")]\n`;
+};
+
+
+//group by block
+Blockly.Blocks['group_by'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("group data by")
+        .appendField(new Blockly.FieldDropdown(this.getGroupByOptions.bind(this)), "GROUP_COL");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour("#FFD54F");
+    this.setTooltip("Group the dataset by a specific column (e.g., Species or cyl)");
+    this.setHelpUrl("");
+    
+    this.workspace.addChangeListener(this.onWorkspaceChange.bind(this));
+  },
+
+  getGroupByOptions: function() {
+    const defaultColumns = [['Select column', '']];
+    const columns = this.getLoadedDatasetColumns();
+    return columns.length > 0 ? columns : defaultColumns;
+  },
+
+  getLoadedDatasetColumns: function() {
+    const blocks = this.workspace.getAllBlocks(false);
+    for (let i = blocks.length - 1; i >= 0; i--) {
+      const block = blocks[i];
+      if (block.type === 'load_builtin_dataset' && block.getFieldValue) {
+        const dataset = block.getFieldValue("DATASET");
+        return datasetColumnsMap[dataset] || [];
+      }
+    }
+    return [];
+  },
+
+  onWorkspaceChange: function(event) {
+    if (event.type === Blockly.Events.BLOCK_CHANGE || 
+        event.type === Blockly.Events.BLOCK_CREATE ||
+        event.type === Blockly.Events.BLOCK_DELETE) {
+      this.updateDropdown();
+    }
+  },
+
+  updateDropdown: function() {
+    const dropdown = this.getField('GROUP_COL');
+    const currentVal = dropdown.getValue();
+    const newOptions = this.getGroupByOptions();
+    dropdown.menuGenerator_ = newOptions;
+
+    const validOptions = newOptions.map(opt => opt[1]);
+    if (validOptions.includes(currentVal)) {
+      dropdown.setValue(currentVal);
+    }
+  }
+};
+
+Blockly.Generator.R.forBlock["group_by"] = function(block) {
+  const groupColumn = block.getFieldValue("GROUP_COL");
+  return `grouped <- split(data, data$${groupColumn})\n`;
+};
+
+
+
+
+// plot_scatter plot block
+Blockly.Blocks['plot_scatter'] = {
+  init: function () {
+    this.appendDummyInput()
+      .appendField("Plot")
+      .appendField("X:")
+      .appendField(new Blockly.FieldDropdown(this.getDropdownOptions.bind(this)), "XVAR")
+      .appendField("Y:")
+      .appendField(new Blockly.FieldDropdown(this.getDropdownOptions.bind(this)), "YVAR")
+      .appendField("Color by:")
+      .appendField(new Blockly.FieldDropdown(this.getDropdownOptionsWithNone.bind(this)), "COLORVAR");
+
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour("#90A4AE");
+    this.setTooltip("Plot selected data using ggplot2");
+    this.setHelpUrl("");
+
+    this.workspace.addChangeListener(this.onWorkspaceChange.bind(this));
+  },
+
+  // Get dropdown options from selected dataset
+  getDropdownOptions: function () {
+    const defaultOptions = [["Select column", ""]];
+    const columns = this.getLoadedDatasetColumns();
+    return columns.length > 0 ? columns : defaultOptions;
+  },
+
+  getDropdownOptionsWithNone: function () {
+    const columns = this.getLoadedDatasetColumns();
+    return [["None", "None"], ...columns];
+  },
+
+  getLoadedDatasetColumns: function () {
+    const blocks = this.workspace.getAllBlocks(false);
+    for (let i = blocks.length - 1; i >= 0; i--) {
+      const block = blocks[i];
+      if (block.type === 'load_builtin_dataset' && block.getFieldValue) {
+        const dataset = block.getFieldValue("DATASET");
+        return datasetColumnsMap[dataset] || [];
+      }
+    }
+    return [];
+  },
+
+  onWorkspaceChange: function (event) {
+    if (
+      event.type === Blockly.Events.BLOCK_CHANGE ||
+      event.type === Blockly.Events.BLOCK_CREATE ||
+      event.type === Blockly.Events.BLOCK_DELETE
+    ) {
+      this.updateDropdowns();
+    }
+  },
+
+  updateDropdowns: function () {
+    const xField = this.getField('XVAR');
+    const yField = this.getField('YVAR');
+    const colorField = this.getField('COLORVAR');
+
+    const currentX = xField.getValue();
+    const currentY = yField.getValue();
+    const currentColor = colorField.getValue();
+
+    const newXOptions = this.getDropdownOptions();
+    const newYOptions = this.getDropdownOptions();
+    const newColorOptions = this.getDropdownOptionsWithNone();
+
+    xField.menuGenerator_ = newXOptions;
+    yField.menuGenerator_ = newYOptions;
+    colorField.menuGenerator_ = newColorOptions;
+
+    const validX = newXOptions.map(opt => opt[1]);
+    const validY = newYOptions.map(opt => opt[1]);
+    const validColor = newColorOptions.map(opt => opt[1]);
+
+    if (validX.includes(currentX)) xField.setValue(currentX);
+    if (validY.includes(currentY)) yField.setValue(currentY);
+    if (validColor.includes(currentColor)) colorField.setValue(currentColor);
+  }
+};
+
+
+Blockly.Generator.R.forBlock["plot_scatter"] = function(block) {
+  const xVar = block.getFieldValue("XVAR");
+  const yVar = block.getFieldValue("YVAR");
+  const colorVar = block.getFieldValue("COLORVAR");
+
+  let code = '';
+  code += 'dataset <- data\n';
+
+  if (colorVar && colorVar !== "None") {
+    code += `cols <- rainbow(length(unique(dataset$${colorVar})))\n`;
+    code += `plot(NULL, xlim=range(dataset$${xVar}), ylim=range(dataset$${yVar}), xlab="${xVar}", ylab="${yVar}", main="Scatter plot")\n`;
+    code += `for(i in seq_along(unique(dataset$${colorVar}))) {\n`;
+    code += `  grp <- unique(dataset$${colorVar})[i]\n`;
+    code += `  points(dataset[dataset$${colorVar} == grp, ]$${xVar}, dataset[dataset$${colorVar} == grp, ]$${yVar}, col=cols[i], pch=19)\n`;
+    code += `}\n`;
+    code += `legend("topright", legend=unique(dataset$${colorVar}), col=cols, pch=19)\n`;
+  } else {
+    code += `plot(dataset$${xVar}, dataset$${yVar}, xlab="${xVar}", ylab="${yVar}", main="Scatter plot", pch=19, col="blue")\n`;
+  }
+
+  return code;
+};
+
+
+
+
+
+
 
 

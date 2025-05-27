@@ -65,7 +65,7 @@ const BlocklyComponent = ({ setCode, isDarkMode, workspaceRef }) => {
         <category name="Transformations" colour="#FFD54F">
           <block type="filter_rows"></block>
           <block type="select_columns"></block>
-          <block type="group_by_summarise"></block>
+          <block type="group_by"></block>
           <block type="subset_rows"></block>
           <block type="subset_column_range"></block>
         </category>
@@ -73,10 +73,8 @@ const BlocklyComponent = ({ setCode, isDarkMode, workspaceRef }) => {
         <category name="Statistics" colour="#BA68C8">
           <block type="calculate_mean"></block>
           <block type="calculate_sd"></block>
-          <block type="summary_statistics"></block>
           <block type="quantile_column"></block>
           <block type="sorted_element_at"></block>
-          <block type="show_rows"></block>
           <block type="summarize_data"></block>
         </category>
 
@@ -108,6 +106,9 @@ const BlocklyComponent = ({ setCode, isDarkMode, workspaceRef }) => {
           <block type="print_output"></block>
           <block type="preview_data"></block>
           <block type="show_structure"></block>
+          <block type="show_rows"></block>
+          <block type="show_tail"></block>
+          <block type="plot_scatter"></block>
         </category>
       </xml>
     `,

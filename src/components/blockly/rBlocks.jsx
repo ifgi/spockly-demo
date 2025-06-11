@@ -165,12 +165,6 @@ Blockly.Generator.R.forBlock['load_raster'] = function(block) {
   return [code, Blockly.Generator.R.ORDER_FUNCTION_CALL];
 };
 
-// Generator for load_builtin_dataset block
-/*Blockly.Generator.R.forBlock["load_builtin_dataset"] = function(block) {
-  const dataset = block.getFieldValue("DATASET");
-  return `data <- ${dataset}\n`;
-};*/
-
 Blockly.Generator.R.forBlock["load_builtin_dataset"] = function(block) {
   const dataset = block.getFieldValue("DATASET");
   if (dataset === "meuse") {
@@ -284,37 +278,69 @@ Blockly.defineBlocksWithJsonArray([
 
 // --------RGENERATOR MATH----------
 
-// --- Statistics ---
+// --- Statistics Blocks ---
 Blockly.defineBlocksWithJsonArray([
   {
     "type": "calculate_sd",
     "message0": "standard deviation of %1",
-    "args0": [{"type": "input_value", "name": "COLUMN"}],
+    "previousStatement": null,
+    "nextStatement": null,
+    "args0": [
+      {
+        "type": "field_dropdown",
+        "name": "COLUMN",
+        "options": [["Select column", ""]]
+      }
+    ],
     "output": null,
     "colour": "#BA68C8",
-    "tooltip": "Calculate standard deviation"
+    "tooltip": "Calculate standard deviation of a numeric column",
+    "extensions": ["dynamic_column_dropdown"]
   },
   {
     "type": "quantile_column",
     "message0": "quantile of %1 at %2",
+    "previousStatement": null,
+    "nextStatement": null,
     "args0": [
-      {"type": "input_value", "name": "VECTOR"},
-      {"type": "field_input", "name": "VALUES", "text": "0.1, 0.5, 0.9"}
+      {
+        "type": "field_dropdown",
+        "name": "COLUMN",
+        "options": [["Select column", ""]]
+      },
+      {
+        "type": "field_input",
+        "name": "VALUES",
+        "text": "0.1, 0.5, 0.9"
+      }
     ],
     "output": null,
     "colour": "#BA68C8",
-    "tooltip": "Compute quantiles at given probabilities"
+    "tooltip": "Compute quantiles at given probabilities",
+    "extensions": ["dynamic_column_dropdown"]
   },
   {
     "type": "sorted_element_at",
     "message0": "sorted element of %1 at position %2",
+    "previousStatement": null,
+    "nextStatement": null,
     "args0": [
-      {"type": "input_value", "name": "VECTOR"},
-      {"type": "field_number", "name": "INDEX", "value": 1}
+      {
+        "type": "field_dropdown",
+        "name": "COLUMN",
+        "options": [["Select column", ""]]
+      },
+      {
+        "type": "field_number",
+        "name": "INDEX",
+        "value": 1,
+        "min": 1
+      }
     ],
     "output": null,
     "colour": "#BA68C8",
-    "tooltip": "Access an element from sorted vector"
+    "tooltip": "Access an element from sorted column",
+    "extensions": ["dynamic_column_dropdown"]
   },
   {
     "type": "summarize_data",
@@ -327,15 +353,18 @@ Blockly.defineBlocksWithJsonArray([
   {
     "type": "calculate_mean",
     "message0": "mean of %1",
-    "args0": [{
-      "type": "field_dropdown", 
-      "name": "COLUMN",
-      "options": [["Select column", ""]]
-    }],
     "previousStatement": null,
     "nextStatement": null,
+    "args0": [
+      {
+        "type": "field_dropdown",
+        "name": "COLUMN",
+        "options": [["Select column", ""]]
+      }
+    ],
+    "output": null,
     "colour": "#BA68C8",
-    "tooltip": "Calculate mean of a column, respecting grouping if present",
+    "tooltip": "Calculate mean of a numeric column",
     "extensions": ["dynamic_column_dropdown"]
   }
 ]);
@@ -343,8 +372,7 @@ Blockly.defineBlocksWithJsonArray([
 // --- Dynamic Column Extension ---
 Blockly.Extensions.register('dynamic_column_dropdown', function() {
   const block = this;
-  
-  // Get available columns from loaded dataset
+
   block.getLoadedDatasetColumns = function() {
     const blocks = this.workspace.getAllBlocks(false);
     for (let i = blocks.length - 1; i >= 0; i--) {
@@ -357,65 +385,61 @@ Blockly.Extensions.register('dynamic_column_dropdown', function() {
     return [];
   };
 
-  // Update the dropdown options
   block.updateDropdown = function() {
     const dropdown = this.getField('COLUMN');
     const currentVal = dropdown.getValue();
     const columns = this.getLoadedDatasetColumns();
     const newOptions = columns.length > 0 ? columns : [['Select column', '']];
-    
+
     dropdown.menuGenerator_ = newOptions;
     if (newOptions.some(opt => opt[1] === currentVal)) {
       dropdown.setValue(currentVal);
     }
   };
 
-  // Initialize and set up change listener
   block.updateDropdown();
   block.workspace.addChangeListener(function(event) {
-    if (event.type === Blockly.Events.BLOCK_CHANGE || 
-        event.type === Blockly.Events.BLOCK_CREATE ||
-        event.type === Blockly.Events.BLOCK_DELETE) {
+    if (
+      event.type === Blockly.Events.BLOCK_CHANGE || 
+      event.type === Blockly.Events.BLOCK_CREATE ||
+      event.type === Blockly.Events.BLOCK_DELETE
+    ) {
       block.updateDropdown();
     }
   });
 });
 
+// --- R Code Generators for statistics blocks---
 
-// --------RGENERATOR FOR STATISTICS BLOCKS---------
+Blockly.Generator.R.forBlock['calculate_sd'] = function(block) {
+  const column = block.getFieldValue('COLUMN');
+  const code = column ? `print(sd(data$${column}, na.rm = TRUE))\n` : '';
+  return code;
+};
 
-//summarize builtin data
+Blockly.Generator.R.forBlock['quantile_column'] = function(block) {
+  const column = block.getFieldValue('COLUMN');
+  const values = block.getFieldValue('VALUES').trim();
+  const probs = values.split(',').map(v => v.trim()).filter(v => v).join(', ');
+  const code = (column && probs) ? `print(quantile(data$${column}, probs = c(${probs}), na.rm = TRUE))\n` : '';
+  return code;
+};
+
+Blockly.Generator.R.forBlock['sorted_element_at'] = function(block) {
+  const column = block.getFieldValue('COLUMN');
+  const index = block.getFieldValue('INDEX');
+  const code = (column && index) 
+    ? `print(sort(data$${column}, na.last = NA)[${index}])\n` 
+    : '';
+  return code;
+};
+
 Blockly.Generator.R.forBlock["summarize_data"] = function(block) {
   const code = `summary(data)\n`;
   return code;
 };
 
-//calculate_sd
-Blockly.Generator.R.forBlock["calculate_sd"] = function(block) {
-  const column = Blockly.Generator.R.valueToCode(block, 'COLUMN', 
-    Blockly.Generator.R.ORDER_NONE) || 'NA';
-  return [`sd(${column}, na.rm = TRUE)`, Blockly.Generator.R.ORDER_FUNCTION_CALL];
-};
 
-//quantile_column
-Blockly.Generator.R.forBlock["quantile_column"] = function(block) {
-  const vector = Blockly.Generator.R.valueToCode(block, 'VECTOR', 
-    Blockly.Generator.R.ORDER_NONE) || 'NA';
-  const values = block.getFieldValue('VALUES');
-  return [`quantile(${vector}, probs = c(${values}), na.rm = TRUE)`, 
-    Blockly.Generator.R.ORDER_FUNCTION_CALL];
-};
-
-//sorted_element
-Blockly.Generator.R.forBlock["sorted_element_at"] = function(block) {
-  const vector = Blockly.Generator.R.valueToCode(block, 'VECTOR', 
-    Blockly.Generator.R.ORDER_NONE) || 'NA';
-  const index = block.getFieldValue('INDEX');
-  return [`sort(${vector}, na.last = TRUE)[${index}]`, 
-    Blockly.Generator.R.ORDER_FUNCTION_CALL];
-};
-
-//mean calculator
 Blockly.Generator.R.forBlock["calculate_mean"] = function(block) {
   const column = block.getFieldValue("COLUMN");
   
@@ -426,7 +450,7 @@ print(mean(data[["${column}"]], na.rm = TRUE))
 
 
 
-// --- Modeling ---
+// --------------------------- Modeling ---------------------------//
 Blockly.defineBlocksWithJsonArray([
   {
     type: "linear_regression",
@@ -457,7 +481,7 @@ Blockly.defineBlocksWithJsonArray([
   }
 ]);
 
-// --- Geometry ---
+// ---------------------------- Geometry ------------------------//
 Blockly.defineBlocksWithJsonArray([
   {
     type: "st_centroid",
@@ -491,7 +515,7 @@ Blockly.defineBlocksWithJsonArray([
   }
 ]);
 
-// --- Raster ---
+// ------------------------------------ Raster --------------------------//
 Blockly.defineBlocksWithJsonArray([
   {
     type: "read_stars",
@@ -525,7 +549,7 @@ Blockly.defineBlocksWithJsonArray([
   }
 ]);
 
-// --- Maps ---
+// ----------------------------- Maps -------------------------------//
 Blockly.defineBlocksWithJsonArray([
   {
     type: "plot_map",
@@ -556,7 +580,7 @@ Blockly.defineBlocksWithJsonArray([
   }
 ]);
 
-// --- Visualization ---
+// ---------------------- Visualization -------------------------//
 Blockly.defineBlocksWithJsonArray([
   {
     type: "print_output",
@@ -723,7 +747,7 @@ Blockly.Generator.R.forBlock["text_print"] = function (block, generator) {
 };
 
 
-//block read inbuilt dataset (visualization)
+// ---------------block read inbuilt dataset (visualization)-----------------------//
 Blockly.defineBlocksWithJsonArray([
   {
     type: "show_rows",
@@ -749,6 +773,7 @@ Blockly.Generator.R.forBlock["show_rows"] = function(block) {
   const code = `head(data, ${rows})\n`;
   return code;
 };
+
 // block read tail of the inbuilt dataset
 Blockly.defineBlocksWithJsonArray([
   {
@@ -1073,193 +1098,6 @@ Blockly.Generator.R.forBlock["plot_scatter"] = function(block) {
   code += `  points(dataset[dataset$${colorVar} == grp, ]$${xVar}, dataset[dataset$${colorVar} == grp, ]$${yVar}, col=cols[i], pch=19)\n`;
   code += `}\n`;
   code += `legend("topright", legend=unique(dataset$${colorVar}), col=cols, pch=19)\n`;
-
-  return code;
-};
-
-
-
-
-// -----------------------------------Testing out working with geojson data---------------------------------------//
-
-Blockly.defineBlocksWithJsonArray([
-  {
-    "type": "load_geojson",
-    "message0": "load geojson from variable %1 into %2",
-    "args0": [
-      {
-        "type": "field_input",
-        "name": "VAR_NAME",
-        "text": "geojson_text"
-      },
-      {
-        "type": "field_input",
-        "name": "VAR",
-        "text": "geo"
-      }
-    ],
-    "previousStatement": null,
-    "nextStatement": null,
-    "colour": 230,
-    "tooltip": "Load GeoJSON from a character variable into a spatial object",
-    "helpUrl": ""
-  },
-  {
-    "type": "assign_variable",
-    "message0": "set %1 to %2",
-    "args0": [
-      {
-        "type": "field_input",
-        "name": "VAR",
-        "text": "geo"
-      },
-      {
-        "type": "input_value",
-        "name": "VALUE"
-      }
-    ],
-    "previousStatement": null,
-    "nextStatement": null,
-    "colour": 160,
-    "tooltip": "Assign a value to a variable",
-    "helpUrl": ""
-  },
-  {
-    "type": "print_statement",
-    "message0": "print %1",
-    "args0": [
-      {
-        "type": "field_input",
-        "name": "TEXT",
-        "text": "geo"
-      }
-    ],
-    "previousStatement": null,
-    "nextStatement": null,
-    "colour": 120,
-    "tooltip": "Print output",
-    "helpUrl": ""
-  },
-  {
-    "type": "plot_statement",
-    "message0": "plot %1",
-    "args0": [
-      {
-        "type": "field_input",
-        "name": "TEXT",
-        "text": "geo"
-      }
-    ],
-    "previousStatement": null,
-    "nextStatement": null,
-    "colour": 65,
-    "tooltip": "Plot an object",
-    "helpUrl": ""
-  },
-  {
-    "type": "plot_geojson",
-    "message0": "plot %1 as %2",
-    "args0": [
-      {
-        "type": "field_input",
-        "name": "DATA_VAR",
-        "text": "geo"
-      },
-      {
-        "type": "field_dropdown",
-        "name": "PLOT_TYPE",
-        "options": [
-          ["points", "point"],
-          ["heatmap", "heatmap"]
-        ]
-      }
-    ],
-    "previousStatement": null,
-    "nextStatement": null,
-    "colour": 65,
-    "tooltip": "Plot GeoJSON using ggplot2",
-    "helpUrl": ""
-  },
-  {
-    "type": "custom_geojson_plot",
-    "message0": "plot %1 with x = %2, y = %3, color = %4",
-    "args0": [
-      {
-        "type": "field_input",
-        "name": "DATA_VAR",
-        "text": "geo"
-      },
-      {
-        "type": "field_input",
-        "name": "X_COLUMN",
-        "text": "lon"
-      },
-      {
-        "type": "field_input",
-        "name": "Y_COLUMN",
-        "text": "lat"
-      },
-      {
-        "type": "field_input",
-        "name": "COLOR_COLUMN",
-        "text": ""
-      }
-    ],
-    "previousStatement": null,
-    "nextStatement": null,
-    "colour": 95,
-    "tooltip": "Plot GeoJSON data with custom axes and optional color",
-    "helpUrl": ""
-  }
-  
-  
-]);
-
-
-// Updated load_geojson block to use jsonlite instead of sf
-Blockly.Generator.R.forBlock['load_geojson'] = function(block) {
-  const varName = block.getFieldValue('VAR_NAME');
-  const varOutput = block.getFieldValue('VAR');
-  const code = `
-library(jsonlite)
-${varOutput} <- geojson_to_df(${varName})
-`;
-  return code;
-};
-Blockly.Generator.R.forBlock['plot_geojson'] = function(block) {
-  const dataVar = block.getFieldValue('DATA_VAR');
-  const plotType = block.getFieldValue('PLOT_TYPE') || 'point';
-
-  let code = '';
-
-  switch (plotType) {
-    case 'point':
-      code = `
-library(ggplot2)
-if('lon' %in% names(${dataVar}) && 'lat' %in% names(${dataVar})) {
-  print(ggplot(${dataVar}, aes(x = lon, y = lat)) + 
-        geom_point() + 
-        theme_minimal() +
-        labs(title = "PLOT"))
-}
-`;
-      break;
-
-    case 'heatmap':
-      code = `
-library(ggplot2)
-if('lon' %in% names(${dataVar}) && 'lat' %in% names(${dataVar})) {
-  print(ggplot(${dataVar}, aes(x = lon, y = lat)) + 
-        geom_bin2d() + 
-        theme_minimal() +
-        labs(title = "GeoJSON Heatmap"))
-}
-`;
-      break;
-
-    default:
-      code = `plot(${dataVar})\n`;
-  }
 
   return code;
 };

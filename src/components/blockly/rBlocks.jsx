@@ -1101,3 +1101,200 @@ Blockly.Generator.R.forBlock["plot_scatter"] = function(block) {
 
   return code;
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// -----------------------------------Testing out working with geojson data---------------------------------------//
+
+Blockly.defineBlocksWithJsonArray([
+  {
+    "type": "load_geojson",
+    "message0": "load geojson from variable %1 into %2",
+    "args0": [
+      {
+        "type": "field_input",
+        "name": "VAR_NAME",
+        "text": "geojson_text"
+      },
+      {
+        "type": "field_input",
+        "name": "VAR",
+        "text": "geo"
+      }
+    ],
+    "previousStatement": null,
+    "nextStatement": null,
+    "colour": 230,
+    "tooltip": "Load GeoJSON from a character variable into a spatial object",
+    "helpUrl": ""
+  },
+  {
+    "type": "assign_variable",
+    "message0": "set %1 to %2",
+    "args0": [
+      {
+        "type": "field_input",
+        "name": "VAR",
+        "text": "geo"
+      },
+      {
+        "type": "input_value",
+        "name": "VALUE"
+      }
+    ],
+    "previousStatement": null,
+    "nextStatement": null,
+    "colour": 160,
+    "tooltip": "Assign a value to a variable",
+    "helpUrl": ""
+  },
+  {
+    "type": "print_statement",
+    "message0": "print %1",
+    "args0": [
+      {
+        "type": "field_input",
+        "name": "TEXT",
+        "text": "geo"
+      }
+    ],
+    "previousStatement": null,
+    "nextStatement": null,
+    "colour": 120,
+    "tooltip": "Print output",
+    "helpUrl": ""
+  },
+  {
+    "type": "plot_statement",
+    "message0": "plot %1",
+    "args0": [
+      {
+        "type": "field_input",
+        "name": "TEXT",
+        "text": "geo"
+      }
+    ],
+    "previousStatement": null,
+    "nextStatement": null,
+    "colour": 65,
+    "tooltip": "Plot an object",
+    "helpUrl": ""
+  },
+  {
+    "type": "plot_geojson",
+    "message0": "plot %1 as %2",
+    "args0": [
+      {
+        "type": "field_input",
+        "name": "DATA_VAR",
+        "text": "geo"
+      },
+      {
+        "type": "field_dropdown",
+        "name": "PLOT_TYPE",
+        "options": [
+          ["points", "point"],
+          ["heatmap", "heatmap"]
+        ]
+      }
+    ],
+    "previousStatement": null,
+    "nextStatement": null,
+    "colour": 65,
+    "tooltip": "Plot GeoJSON using ggplot2",
+    "helpUrl": ""
+  },
+  {
+    "type": "custom_geojson_plot",
+    "message0": "plot %1 with x = %2, y = %3, color = %4",
+    "args0": [
+      {
+        "type": "field_input",
+        "name": "DATA_VAR",
+        "text": "geo"
+      },
+      {
+        "type": "field_input",
+        "name": "X_COLUMN",
+        "text": "lon"
+      },
+      {
+        "type": "field_input",
+        "name": "Y_COLUMN",
+        "text": "lat"
+      },
+      {
+        "type": "field_input",
+        "name": "COLOR_COLUMN",
+        "text": ""
+      }
+    ],
+    "previousStatement": null,
+    "nextStatement": null,
+    "colour": 95,
+    "tooltip": "Plot GeoJSON data with custom axes and optional color",
+    "helpUrl": ""
+  }
+  
+  
+]);
+
+
+// Load_geojson block to use jsonlite instead of sf
+Blockly.Generator.R.forBlock['load_geojson'] = function(block) {
+  const varName = block.getFieldValue('VAR_NAME');
+  const varOutput = block.getFieldValue('VAR');
+  const code = `
+library(jsonlite)
+${varOutput} <- geojson_to_df(${varName})
+`;
+  return code;
+};
+Blockly.Generator.R.forBlock['plot_geojson'] = function(block) {
+  const dataVar = block.getFieldValue('DATA_VAR');
+  const plotType = block.getFieldValue('PLOT_TYPE') || 'point';
+
+  let code = '';
+
+  switch (plotType) {
+    case 'point':
+      code = `
+library(ggplot2)
+if('lon' %in% names(${dataVar}) && 'lat' %in% names(${dataVar})) {
+  print(ggplot(${dataVar}, aes(x = lon, y = lat)) + 
+        geom_point() + 
+        theme_minimal() +
+        labs(title = "PLOT"))
+}
+`;
+      break;
+
+    case 'heatmap':
+      code = `
+library(ggplot2)
+if('lon' %in% names(${dataVar}) && 'lat' %in% names(${dataVar})) {
+  print(ggplot(${dataVar}, aes(x = lon, y = lat)) + 
+        geom_bin2d() + 
+        theme_minimal() +
+        labs(title = "GeoJSON Heatmap"))
+}
+`;
+      break;
+
+    default:
+      code = `plot(${dataVar})\n`;
+  }
+
+  return code;
+};

@@ -17,15 +17,16 @@ const initializeWebR = async (setOutput) => {
         setOutput("Initializing WebR...");
         await webR.init();
         
-        const packagesToTry = [
+        const packagesToInstall = [
           { name: 'ggplot2', essential: true },
           { name: 'jsonlite', essential: true },
+          { name: 'sp', essential: true },
           { name: 'geojsonio', essential: false },
           { name: 'leaflet', essential: false },
           { name: 'sf', essential: false },
         ];
         
-        for (const pkg of packagesToTry) {
+        for (const pkg of packagesToInstall) {
           try {
             setOutput(`Checking ${pkg.name}...`);
             const check = await webR.evalR(`requireNamespace("${pkg.name}", quietly = TRUE)`);

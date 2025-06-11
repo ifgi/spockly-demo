@@ -110,7 +110,7 @@ Blockly.defineBlocksWithJsonArray([
       {
         type: "field_dropdown",
         name: "DATASET",
-        options: [["iris", "iris"], ["mtcars", "mtcars"], ["airquality", "airquality"]]
+        options: [["iris", "iris"], ["mtcars", "mtcars"], ["airquality", "airquality"], ["meuse", "meuse"]]
       }
     ],
     previousStatement: null,
@@ -126,7 +126,7 @@ Blockly.defineBlocksWithJsonArray([
       {
         type: "field_dropdown",
         name: "DATASET",
-        options: [["iris", "iris"], ["mtcars", "mtcars"], ["airquality", "airquality"]]
+        options: [["iris", "iris"], ["mtcars", "mtcars"], ["airquality", "airquality"], ["meuse", "meuse"]]
       }
     ],
     output: "DataFrame",
@@ -166,9 +166,18 @@ Blockly.Generator.R.forBlock['load_raster'] = function(block) {
 };
 
 // Generator for load_builtin_dataset block
-Blockly.Generator.R.forBlock["load_builtin_dataset"] = function(block) {
+/*Blockly.Generator.R.forBlock["load_builtin_dataset"] = function(block) {
   const dataset = block.getFieldValue("DATASET");
   return `data <- ${dataset}\n`;
+};*/
+
+Blockly.Generator.R.forBlock["load_builtin_dataset"] = function(block) {
+  const dataset = block.getFieldValue("DATASET");
+  if (dataset === "meuse") {
+    return `library(sp)\ndata(meuse)\ndata <- meuse\n`;
+  } else {
+    return `data <- ${dataset}\n`;
+  }
 };
 
 // Generator for get_dataset block
@@ -331,8 +340,6 @@ Blockly.defineBlocksWithJsonArray([
   }
 ]);
 
-/*
-
 // --- Dynamic Column Extension ---
 Blockly.Extensions.register('dynamic_column_dropdown', function() {
   const block = this;
@@ -372,7 +379,7 @@ Blockly.Extensions.register('dynamic_column_dropdown', function() {
       block.updateDropdown();
     }
   });
-});*/
+});
 
 
 // --------RGENERATOR FOR STATISTICS BLOCKS---------
@@ -413,17 +420,10 @@ Blockly.Generator.R.forBlock["calculate_mean"] = function(block) {
   const column = block.getFieldValue("COLUMN");
   
   return `
-# Calculate mean of ${column}
-if (!exists("data")) stop("No data available")
-if (!"${column}" %in% names(data)) stop("Column '${column}' not found")
-
-if (exists("grouped")) {
-  print(lapply(grouped, function(df) mean(df[["${column}"]], na.rm = TRUE)))
-} else {
-  print(mean(data[["${column}"]], na.rm = TRUE))
-}
+print(mean(data[["${column}"]], na.rm = TRUE))
 `;
 };
+
 
 
 // --- Modeling ---
@@ -723,7 +723,7 @@ Blockly.Generator.R.forBlock["text_print"] = function (block, generator) {
 };
 
 
-//block read inbuilt dataset
+//block read inbuilt dataset (visualization)
 Blockly.defineBlocksWithJsonArray([
   {
     type: "show_rows",
@@ -795,7 +795,7 @@ Blockly.Generator.R.forBlock["show_structure"] = function(block) {
 
 
 
-// Column mapping for R inbuilt datasets
+// -------------------------Column mapping for R inbuilt datasets------------------------------//
 const datasetColumnsMap = {
   iris: [
     ['Sepal.Length', 'Sepal.Length'],
@@ -824,6 +824,22 @@ const datasetColumnsMap = {
     ['Temp', 'Temp'],
     ['Month', 'Month'],
     ['Day', 'Day']
+  ],
+  meuse: [
+    ['x', 'x'],
+    ['y', 'y'],
+    ['cadmium', 'cadmium'],
+    ['copper', 'copper'],
+    ['lead', 'lead'],
+    ['zinc', 'zinc'],
+    ['elev', 'elev'],
+    ['dist', 'dist'],
+    ['om', 'om'],
+    ['ffreq', 'ffreq'],
+    ['soil', 'soil'],
+    ['lime', 'lime'],
+    ['landuse', 'landuse'],
+    ['dist.m', 'dist.m']
   ]
 };
 
@@ -961,8 +977,6 @@ Blockly.Generator.R.forBlock["group_by"] = function(block) {
 };
 
 
-
-
 // plot_scatter plot block
 Blockly.Blocks['plot_scatter'] = {
   init: function () {
@@ -1045,7 +1059,6 @@ Blockly.Blocks['plot_scatter'] = {
   }
 };
 
-
 Blockly.Generator.R.forBlock["plot_scatter"] = function(block) {
   const xVar = block.getFieldValue("XVAR");
   const yVar = block.getFieldValue("YVAR");
@@ -1053,18 +1066,13 @@ Blockly.Generator.R.forBlock["plot_scatter"] = function(block) {
 
   let code = '';
   code += 'dataset <- data\n';
-
-  if (colorVar && colorVar !== "None") {
-    code += `cols <- rainbow(length(unique(dataset$${colorVar})))\n`;
-    code += `plot(NULL, xlim=range(dataset$${xVar}), ylim=range(dataset$${yVar}), xlab="${xVar}", ylab="${yVar}", main="Scatter plot")\n`;
-    code += `for(i in seq_along(unique(dataset$${colorVar}))) {\n`;
-    code += `  grp <- unique(dataset$${colorVar})[i]\n`;
-    code += `  points(dataset[dataset$${colorVar} == grp, ]$${xVar}, dataset[dataset$${colorVar} == grp, ]$${yVar}, col=cols[i], pch=19)\n`;
-    code += `}\n`;
-    code += `legend("topright", legend=unique(dataset$${colorVar}), col=cols, pch=19)\n`;
-  } else {
-    code += `plot(dataset$${xVar}, dataset$${yVar}, xlab="${xVar}", ylab="${yVar}", main="Scatter plot", pch=19, col="blue")\n`;
-  }
+  code += `cols <- rainbow(length(unique(dataset$${colorVar})))\n`;
+  code += `plot(NULL, xlim=range(dataset$${xVar}), ylim=range(dataset$${yVar}), xlab="${xVar}", ylab="${yVar}", main="Scatter plot")\n`;
+  code += `for(i in seq_along(unique(dataset$${colorVar}))) {\n`;
+  code += `  grp <- unique(dataset$${colorVar})[i]\n`;
+  code += `  points(dataset[dataset$${colorVar} == grp, ]$${xVar}, dataset[dataset$${colorVar} == grp, ]$${yVar}, col=cols[i], pch=19)\n`;
+  code += `}\n`;
+  code += `legend("topright", legend=unique(dataset$${colorVar}), col=cols, pch=19)\n`;
 
   return code;
 };
@@ -1072,7 +1080,186 @@ Blockly.Generator.R.forBlock["plot_scatter"] = function(block) {
 
 
 
+// -----------------------------------Testing out working with geojson data---------------------------------------//
+
+Blockly.defineBlocksWithJsonArray([
+  {
+    "type": "load_geojson",
+    "message0": "load geojson from variable %1 into %2",
+    "args0": [
+      {
+        "type": "field_input",
+        "name": "VAR_NAME",
+        "text": "geojson_text"
+      },
+      {
+        "type": "field_input",
+        "name": "VAR",
+        "text": "geo"
+      }
+    ],
+    "previousStatement": null,
+    "nextStatement": null,
+    "colour": 230,
+    "tooltip": "Load GeoJSON from a character variable into a spatial object",
+    "helpUrl": ""
+  },
+  {
+    "type": "assign_variable",
+    "message0": "set %1 to %2",
+    "args0": [
+      {
+        "type": "field_input",
+        "name": "VAR",
+        "text": "geo"
+      },
+      {
+        "type": "input_value",
+        "name": "VALUE"
+      }
+    ],
+    "previousStatement": null,
+    "nextStatement": null,
+    "colour": 160,
+    "tooltip": "Assign a value to a variable",
+    "helpUrl": ""
+  },
+  {
+    "type": "print_statement",
+    "message0": "print %1",
+    "args0": [
+      {
+        "type": "field_input",
+        "name": "TEXT",
+        "text": "geo"
+      }
+    ],
+    "previousStatement": null,
+    "nextStatement": null,
+    "colour": 120,
+    "tooltip": "Print output",
+    "helpUrl": ""
+  },
+  {
+    "type": "plot_statement",
+    "message0": "plot %1",
+    "args0": [
+      {
+        "type": "field_input",
+        "name": "TEXT",
+        "text": "geo"
+      }
+    ],
+    "previousStatement": null,
+    "nextStatement": null,
+    "colour": 65,
+    "tooltip": "Plot an object",
+    "helpUrl": ""
+  },
+  {
+    "type": "plot_geojson",
+    "message0": "plot %1 as %2",
+    "args0": [
+      {
+        "type": "field_input",
+        "name": "DATA_VAR",
+        "text": "geo"
+      },
+      {
+        "type": "field_dropdown",
+        "name": "PLOT_TYPE",
+        "options": [
+          ["points", "point"],
+          ["heatmap", "heatmap"]
+        ]
+      }
+    ],
+    "previousStatement": null,
+    "nextStatement": null,
+    "colour": 65,
+    "tooltip": "Plot GeoJSON using ggplot2",
+    "helpUrl": ""
+  },
+  {
+    "type": "custom_geojson_plot",
+    "message0": "plot %1 with x = %2, y = %3, color = %4",
+    "args0": [
+      {
+        "type": "field_input",
+        "name": "DATA_VAR",
+        "text": "geo"
+      },
+      {
+        "type": "field_input",
+        "name": "X_COLUMN",
+        "text": "lon"
+      },
+      {
+        "type": "field_input",
+        "name": "Y_COLUMN",
+        "text": "lat"
+      },
+      {
+        "type": "field_input",
+        "name": "COLOR_COLUMN",
+        "text": ""
+      }
+    ],
+    "previousStatement": null,
+    "nextStatement": null,
+    "colour": 95,
+    "tooltip": "Plot GeoJSON data with custom axes and optional color",
+    "helpUrl": ""
+  }
+  
+  
+]);
 
 
+// Updated load_geojson block to use jsonlite instead of sf
+Blockly.Generator.R.forBlock['load_geojson'] = function(block) {
+  const varName = block.getFieldValue('VAR_NAME');
+  const varOutput = block.getFieldValue('VAR');
+  const code = `
+library(jsonlite)
+${varOutput} <- geojson_to_df(${varName})
+`;
+  return code;
+};
+Blockly.Generator.R.forBlock['plot_geojson'] = function(block) {
+  const dataVar = block.getFieldValue('DATA_VAR');
+  const plotType = block.getFieldValue('PLOT_TYPE') || 'point';
 
+  let code = '';
 
+  switch (plotType) {
+    case 'point':
+      code = `
+library(ggplot2)
+if('lon' %in% names(${dataVar}) && 'lat' %in% names(${dataVar})) {
+  print(ggplot(${dataVar}, aes(x = lon, y = lat)) + 
+        geom_point() + 
+        theme_minimal() +
+        labs(title = "PLOT"))
+}
+`;
+      break;
+
+    case 'heatmap':
+      code = `
+library(ggplot2)
+if('lon' %in% names(${dataVar}) && 'lat' %in% names(${dataVar})) {
+  print(ggplot(${dataVar}, aes(x = lon, y = lat)) + 
+        geom_bin2d() + 
+        theme_minimal() +
+        labs(title = "GeoJSON Heatmap"))
+}
+`;
+      break;
+
+    default:
+      code = `plot(${dataVar})\n`;
+  }
+
+  return code;
+};

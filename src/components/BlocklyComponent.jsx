@@ -109,6 +109,8 @@ const BlocklyComponent = ({ setCode, isDarkMode, workspaceRef }) => {
           <block type="show_rows"></block>
           <block type="show_tail"></block>
           <block type="plot_scatter"></block>
+          <block type="plot_histogram"></block>
+          <block type="plot_boxplot"></block>
         </category>
         
         <category name="Geojson filetest" colour="#8E44AD">

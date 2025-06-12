@@ -1022,8 +1022,6 @@ Blockly.Blocks['plot_scatter'] = {
 
     this.workspace.addChangeListener(this.onWorkspaceChange.bind(this));
   },
-
-  // Get dropdown options from selected dataset
   getDropdownOptions: function () {
     const defaultOptions = [["Select column", ""]];
     const columns = this.getLoadedDatasetColumns();
@@ -1056,34 +1054,37 @@ Blockly.Blocks['plot_scatter'] = {
       this.updateDropdowns();
     }
   },
+    updateDropdowns: function () {
+      const xField = this.getField('XVAR');
+      const yField = this.getField('YVAR');
+      const colorField = this.getField('COLORVAR');
+    
+      if (!xField || !yField || !colorField) return;
+    
+      const currentX = xField.getValue();
+      const currentY = yField.getValue();
+      const currentColor = colorField.getValue();
+    
+      const newXOptions = this.getDropdownOptions();
+      const newYOptions = this.getDropdownOptions();
+      const newColorOptions = this.getDropdownOptionsWithNone();
+    
+      xField.menuGenerator_ = newXOptions;
+      yField.menuGenerator_ = newYOptions;
+      colorField.menuGenerator_ = newColorOptions;
+    
+      const validX = newXOptions.map(opt => opt[1]);
+      const validY = newYOptions.map(opt => opt[1]);
+      const validColor = newColorOptions.map(opt => opt[1]);
+    
 
-  updateDropdowns: function () {
-    const xField = this.getField('XVAR');
-    const yField = this.getField('YVAR');
-    const colorField = this.getField('COLORVAR');
-
-    const currentX = xField.getValue();
-    const currentY = yField.getValue();
-    const currentColor = colorField.getValue();
-
-    const newXOptions = this.getDropdownOptions();
-    const newYOptions = this.getDropdownOptions();
-    const newColorOptions = this.getDropdownOptionsWithNone();
-
-    xField.menuGenerator_ = newXOptions;
-    yField.menuGenerator_ = newYOptions;
-    colorField.menuGenerator_ = newColorOptions;
-
-    const validX = newXOptions.map(opt => opt[1]);
-    const validY = newYOptions.map(opt => opt[1]);
-    const validColor = newColorOptions.map(opt => opt[1]);
-
-    if (validX.includes(currentX)) xField.setValue(currentX);
-    if (validY.includes(currentY)) yField.setValue(currentY);
-    if (validColor.includes(currentColor)) colorField.setValue(currentColor);
-  }
+      xField.setValue(validX.includes(currentX) ? currentX : validX[0]);
+      yField.setValue(validY.includes(currentY) ? currentY : validY[0]);
+      colorField.setValue(validColor.includes(currentColor) ? currentColor : validColor[0]);
+    }
+    
 };
-//scatter-plot
+// scatter-plot rgenerater
 Blockly.Generator.R.forBlock["plot_scatter"] = function(block) {
   const xVar = block.getFieldValue("XVAR");
   const yVar = block.getFieldValue("YVAR");
@@ -1101,6 +1102,7 @@ Blockly.Generator.R.forBlock["plot_scatter"] = function(block) {
 
   return code;
 };
+
 //histogram
 Blockly.Blocks['plot_histogram'] = {
   init: function () {
@@ -1144,16 +1146,19 @@ Blockly.Blocks['plot_histogram'] = {
       this.updateDropdowns();
     }
   },
-
-  updateDropdowns: function () {
-    const columnField = this.getField('COLUMN');
-    const current = columnField.getValue();
-    const newOptions = this.getDropdownOptions();
-    columnField.menuGenerator_ = newOptions;
-
-    const valid = newOptions.map(opt => opt[1]);
-    if (valid.includes(current)) columnField.setValue(current);
-  }
+    updateDropdowns: function () {
+      const columnField = this.getField('COLUMN');
+    
+      if (!columnField) return;
+    
+      const current = columnField.getValue();
+      const newOptions = this.getDropdownOptions();
+      columnField.menuGenerator_ = newOptions;
+    
+      const valid = newOptions.map(opt => opt[1]);
+      if (valid.includes(current)) columnField.setValue(current);
+    }
+    
 };
 
 Blockly.Generator.R.forBlock["plot_histogram"] = function(block) {
@@ -1217,26 +1222,31 @@ Blockly.Blocks['plot_boxplot'] = {
       this.updateDropdowns();
     }
   },
-
-  updateDropdowns: function () {
-    const columnField = this.getField('COLUMN');
-    const groupField = this.getField('GROUPVAR');
-
-    const currentColumn = columnField.getValue();
-    const currentGroup = groupField.getValue();
-
-    const columnOptions = this.getDropdownOptions();
-    const groupOptions = this.getDropdownOptionsWithNone();
-
-    columnField.menuGenerator_ = columnOptions;
-    groupField.menuGenerator_ = groupOptions;
-
-    const validCols = columnOptions.map(opt => opt[1]);
-    const validGroups = groupOptions.map(opt => opt[1]);
-
-    if (validCols.includes(currentColumn)) columnField.setValue(currentColumn);
-    if (validGroups.includes(currentGroup)) groupField.setValue(currentGroup);
-  }
+    updateDropdowns: function () {
+      const columnField = this.getField('COLUMN');
+      const groupField = this.getField('GROUPVAR');
+    
+      if (!columnField || !groupField) {
+        return;
+      }
+    
+      const currentColumn = columnField.getValue();
+      const currentGroup = groupField.getValue();
+    
+      const columnOptions = this.getDropdownOptions();
+      const groupOptions = this.getDropdownOptionsWithNone();
+    
+      columnField.menuGenerator_ = columnOptions;
+      groupField.menuGenerator_ = groupOptions;
+    
+      const validCols = columnOptions.map(opt => opt[1]);
+      const validGroups = groupOptions.map(opt => opt[1]);
+    
+      if (validCols.includes(currentColumn)) columnField.setValue(currentColumn);
+      if (validGroups.includes(currentGroup)) groupField.setValue(currentGroup);
+    }
+    
+    
 };
 
 

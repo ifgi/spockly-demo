@@ -9,22 +9,25 @@ import {
   AlertTitle, 
   Typography,
   Box,
-  CircularProgress
+  CircularProgress,
+  Grid
 } from '@mui/material';
-import { CheckCircle, Error } from '@mui/icons-material';
+import { CheckCircle, Error, UploadFile, Map } from '@mui/icons-material';
 
-const FileUploadManager = ({ webRInstance, isDarkMode, open, onClose }) => {
+const FileUploadManager = ({ webRInstance, isDarkMode, open, onClose, onGeojsonUpload }) => {
   const [uploadStatus, setUploadStatus] = useState(null);
   const [fileName, setFileName] = useState('');
   const [filePath, setFilePath] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [fileType, setFileType] = useState('');
 
-  const handleFileUpload = async (event) => {
+  const handleCSVUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
     setIsUploading(true);
     setFileName(file.name);
+    setFileType('CSV');
     
     try {
       // Convert file to ArrayBuffer
@@ -40,7 +43,38 @@ const FileUploadManager = ({ webRInstance, isDarkMode, open, onClose }) => {
       setFilePath(targetPath);
       setUploadStatus('success');
     } catch (error) {
-      console.error('File upload failed:', error);
+      console.error('CSV file upload failed:', error);
+      setUploadStatus('error');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleGeojsonUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    setFileName(file.name);
+    setFileType('GeoJSON');
+
+    try {
+      const text = await file.text();
+      // Validate JSON
+      JSON.parse(text);
+      
+      // Create the R variable assignment
+      const safeText = JSON.stringify(text);
+      const geojsonVariable = `geojson_text <- ${safeText}`;
+      
+      // Call the callback to pass the variable to the parent
+      if (onGeojsonUpload) {
+        onGeojsonUpload(geojsonVariable, file.name);
+      }
+      
+      setUploadStatus('success');
+    } catch (error) {
+      console.error('GeoJSON file upload failed:', error);
       setUploadStatus('error');
     } finally {
       setIsUploading(false);
@@ -51,12 +85,14 @@ const FileUploadManager = ({ webRInstance, isDarkMode, open, onClose }) => {
     setUploadStatus(null);
     setFileName('');
     setFilePath('');
+    setFileType('');
     setIsUploading(false);
     onClose();
   };
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(fileName);
+    const textToCopy = fileType === 'GeoJSON' ? 'geojson_to_df(geojson_text)' : fileName;
+    navigator.clipboard.writeText(textToCopy);
   };
 
   return (
@@ -73,35 +109,79 @@ const FileUploadManager = ({ webRInstance, isDarkMode, open, onClose }) => {
       }}
     >
       <DialogTitle sx={{ color: isDarkMode ? '#ffffff' : '#000000' }}>
-        Upload CSV File
+        Upload Files
       </DialogTitle>
       
       <DialogContent>
         {!uploadStatus && !isUploading && (
           <Box>
-            <Typography variant="body1" sx={{ mb: 2, color: isDarkMode ? '#ffffff' : '#000000' }}>
-              Select a CSV file to upload to WebR:
+            <Typography variant="body1" sx={{ mb: 3, color: isDarkMode ? '#ffffff' : '#000000' }}>
+              Select a file to upload:
             </Typography>
-            <input
-              accept=".csv"
-              style={{ display: 'none' }}
-              id="file-upload"
-              type="file"
-              onChange={handleFileUpload}
-            />
-            <label htmlFor="file-upload">
-              <Button
-                variant="contained"
-                component="span"
-                sx={{
-                  borderRadius: '8px',
-                  textTransform: 'none',
-                  fontWeight: 'bold'
-                }}
-              >
-                Choose CSV File
-              </Button>
-            </label>
+            
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <input
+                  accept=".csv"
+                  style={{ display: 'none' }}
+                  id="csv-upload"
+                  type="file"
+                  onChange={handleCSVUpload}
+                />
+                <label htmlFor="csv-upload">
+                  <Button
+                    variant="contained"
+                    component="span"
+                    fullWidth
+                    startIcon={<UploadFile />}
+                    sx={{
+                      borderRadius: '12px',
+                      textTransform: 'none',
+                      fontWeight: 'bold',
+                      py: 1.5,
+                      bgcolor: '#1976d2',
+                      '&:hover': {
+                        bgcolor: '#1565c0'
+                      }
+                    }}
+                  >
+                    Choose CSV File
+                  </Button>
+                </label>
+              </Grid>
+              
+              <Grid item xs={6}>
+                <input
+                  accept=".geojson,.json"
+                  style={{ display: 'none' }}
+                  id="geojson-upload"
+                  type="file"
+                  onChange={handleGeojsonUpload}
+                />
+                <label htmlFor="geojson-upload">
+                  <Button
+                    variant="contained"
+                    component="span"
+                    fullWidth
+                    startIcon={<Map />}
+                    sx={{
+                      borderRadius: '12px',
+                      textTransform: 'none',
+                      fontWeight: 'bold',
+                      py: 1.5,
+                      bgcolor: '#ffffff',
+                      color: '#000000',  
+                      '&:hover': {
+                        bgcolor: '#f5f5f5',
+                        color: '#000000'
+                      }
+                    }}
+                  >
+                    Choose GeoJSON File
+                  </Button>
+                </label>
+              </Grid>
+            </Grid>
           </Box>
         )}
 
@@ -122,33 +202,71 @@ const FileUploadManager = ({ webRInstance, isDarkMode, open, onClose }) => {
           >
             <AlertTitle>Upload Successful!</AlertTitle>
             <Typography variant="body2" sx={{ mt: 1, mb: 2 }}>
-              File uploaded successfully to WebR filesystem.
+              {fileType} file uploaded successfully!
             </Typography>
-            <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>
-              Use this filename in your load_csv block:
-            </Typography>
-            <Box 
-              sx={{ 
-                bgcolor: '#f5f5f5', 
-                p: 1, 
-                borderRadius: 1, 
-                fontFamily: 'monospace',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}
-            >
-              <Typography variant="body2" sx={{ color: '#000' }}>
-                {fileName}
-              </Typography>
-              <Button 
-                size="small" 
-                onClick={copyToClipboard}
-                sx={{ ml: 1 }}
-              >
-                Copy
-              </Button>
-            </Box>
+            
+            {fileType === 'CSV' && (
+              <>
+                <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>
+                  Use this filename in your R code:
+                </Typography>
+                <Box 
+                  sx={{ 
+                    bgcolor: '#f5f5f5', 
+                    p: 1, 
+                    borderRadius: 1, 
+                    fontFamily: 'monospace',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}
+                >
+                  <Typography variant="body2" sx={{ color: '#000' }}>
+                    {fileName}
+                  </Typography>
+                  <Button 
+                    size="small" 
+                    onClick={copyToClipboard}
+                    sx={{ ml: 1 }}
+                  >
+                    Copy
+                  </Button>
+                </Box>
+              </>
+            )}
+            
+            {fileType === 'GeoJSON' && (
+              <>
+                <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>
+                  Use this code to convert to data frame:
+                </Typography>
+                <Box 
+                  sx={{ 
+                    bgcolor: '#f5f5f5', 
+                    p: 1, 
+                    borderRadius: 1, 
+                    fontFamily: 'monospace',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}
+                >
+                  <Typography variant="body2" sx={{ color: '#000' }}>
+                    geojson_to_df(geojson_text)
+                  </Typography>
+                  <Button 
+                    size="small" 
+                    onClick={copyToClipboard}
+                    sx={{ ml: 1 }}
+                  >
+                    Copy
+                  </Button>
+                </Box>
+                <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic' }}>
+                  The GeoJSON data is now available as 'geojson_text' variable in your R environment.
+                </Typography>
+              </>
+            )}
           </Alert>
         )}
 
@@ -159,7 +277,7 @@ const FileUploadManager = ({ webRInstance, isDarkMode, open, onClose }) => {
           >
             <AlertTitle>Upload Failed!</AlertTitle>
             <Typography variant="body2">
-              There was an error uploading the file. Please try again.
+              There was an error uploading the {fileType} file. Please try again.
             </Typography>
           </Alert>
         )}

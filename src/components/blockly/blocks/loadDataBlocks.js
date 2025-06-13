@@ -1,5 +1,55 @@
 import * as Blockly from "blockly";
 
+
+// ---column mapping for R inbuilt datasets--------------//
+const datasetColumnsMap = {
+  iris: [
+    ['Sepal.Length', 'Sepal.Length'],
+    ['Sepal.Width', 'Sepal.Width'],
+    ['Petal.Length', 'Petal.Length'],
+    ['Petal.Width', 'Petal.Width'],
+    ['Species', 'Species']
+  ],
+  mtcars: [
+    ['mpg', 'mpg'],
+    ['cyl', 'cyl'],
+    ['disp', 'disp'],
+    ['hp', 'hp'],
+    ['drat', 'drat'],
+    ['wt', 'wt'],
+    ['qsec', 'qsec'],
+    ['vs', 'vs'],
+    ['am', 'am'],
+    ['gear', 'gear'],
+    ['carb', 'carb']
+  ],
+  airquality: [
+    ['Ozone', 'Ozone'],
+    ['Solar.R', 'Solar.R'],
+    ['Wind', 'Wind'],
+    ['Temp', 'Temp'],
+    ['Month', 'Month'],
+    ['Day', 'Day']
+  ],
+  meuse: [
+    ['x', 'x'],
+    ['y', 'y'],
+    ['cadmium', 'cadmium'],
+    ['copper', 'copper'],
+    ['lead', 'lead'],
+    ['zinc', 'zinc'],
+    ['elev', 'elev'],
+    ['dist', 'dist'],
+    ['om', 'om'],
+    ['ffreq', 'ffreq'],
+    ['soil', 'soil'],
+    ['lime', 'lime'],
+    ['landuse', 'landuse'],
+    ['dist.m', 'dist.m']
+  ]
+};
+
+
 // --- Data Loading Blocks ---
 // Blocks to load various types of data sources into the workspace
   
@@ -259,6 +309,170 @@ Blockly.defineBlocksWithJsonArray([
     tooltip: "Access a column range from a dataframe"
   }
 ]);
+
+
+// Define the block to select column - inbuilt dataset
+Blockly.Blocks['select_columns'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("select columns")
+        .appendField(new Blockly.FieldDropdown(this.getColumnOptions.bind(this)), "COLUMN1")
+        .appendField(",")
+        .appendField(new Blockly.FieldDropdown(this.getColumnOptions.bind(this)), "COLUMN2");
+    this.setInputsInline(true);
+    this.setPreviousStatement(true, null); 
+    this.setNextStatement(true, null);     
+    this.setColour("#FFA726"); 
+    this.setTooltip("Select two columns from the loaded dataset");
+    this.setHelpUrl("");
+
+    this.workspace.addChangeListener(this.onWorkspaceChange.bind(this));
+  },
+
+  getColumnOptions: function() {
+    const defaultColumns = [['col1', 'col2']];
+    const loadedDataset = this.getLoadedDatasetColumns();
+    return loadedDataset.length > 0 ? loadedDataset : defaultColumns;
+  },
+  getLoadedDatasetColumns: function() {
+    const blocks = this.workspace.getAllBlocks(false);
+    for (let i = blocks.length - 1; i >= 0; i--) {
+      const block = blocks[i];
+      if (block.type === 'load_builtin_dataset' && block.getFieldValue) {
+        const datasetName = block.getFieldValue('DATASET');
+        if (datasetColumnsMap[datasetName]) {
+          return datasetColumnsMap[datasetName];
+        }
+      }
+    }
+    return [];
+  },
+  onWorkspaceChange: function(event) {
+    if (event.type === Blockly.Events.BLOCK_CHANGE || 
+        event.type === Blockly.Events.BLOCK_CREATE ||
+        event.type === Blockly.Events.BLOCK_DELETE) {
+      this.updateDropdowns();
+    }
+  },
+
+  updateDropdowns: function() {
+    const newOptions = this.getColumnOptions();
+    const dropdown1 = this.getField('COLUMN1');
+    const dropdown2 = this.getField('COLUMN2');
+    
+    if (dropdown1 && dropdown2) {
+      const currentVal1 = dropdown1.getValue();
+      const currentVal2 = dropdown2.getValue();
+
+      dropdown1.menuGenerator_ = newOptions;
+      dropdown2.menuGenerator_ = newOptions;
+
+      const optionValues = newOptions.map(option => option[1]);
+      if (optionValues.includes(currentVal1)) {
+        dropdown1.setValue(currentVal1);
+      }
+      if (optionValues.includes(currentVal2)) {
+        dropdown2.setValue(currentVal2);
+      }
+    }
+  }
+};
+
+Blockly.Generator.R.forBlock["select_columns"] = function(block) {
+  const column1 = block.getFieldValue("COLUMN1");
+  const column2 = block.getFieldValue("COLUMN2");
+  return `selected_data <- data[c("${column1}", "${column2}")]\n`;
+};
+
+
+//group by block
+Blockly.Blocks['group_by'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("group data by")
+        .appendField(new Blockly.FieldDropdown(this.getGroupByOptions.bind(this)), "GROUP_COL");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour("#FFA726");
+    this.setTooltip("Group the dataset by a specific column (e.g., Species or cyl)");
+    this.setHelpUrl("");
+    
+    this.workspace.addChangeListener(this.onWorkspaceChange.bind(this));
+  },
+
+  getGroupByOptions: function() {
+    const defaultColumns = [['Select column', '']];
+    const columns = this.getLoadedDatasetColumns();
+    return columns.length > 0 ? columns : defaultColumns;
+  },
+
+  getLoadedDatasetColumns: function() {
+    const blocks = this.workspace.getAllBlocks(false);
+    for (let i = blocks.length - 1; i >= 0; i--) {
+      const block = blocks[i];
+      if (block.type === 'load_builtin_dataset' && block.getFieldValue) {
+        const dataset = block.getFieldValue("DATASET");
+        return datasetColumnsMap[dataset] || [];
+      }
+    }
+    return [];
+  },
+
+  onWorkspaceChange: function(event) {
+    if (event.type === Blockly.Events.BLOCK_CHANGE || 
+        event.type === Blockly.Events.BLOCK_CREATE ||
+        event.type === Blockly.Events.BLOCK_DELETE) {
+      this.updateDropdown();
+    }
+  },
+
+  updateDropdown: function() {
+    const dropdown = this.getField('GROUP_COL');
+    const currentVal = dropdown.getValue();
+    const newOptions = this.getGroupByOptions();
+    dropdown.menuGenerator_ = newOptions;
+
+    const validOptions = newOptions.map(opt => opt[1]);
+    if (validOptions.includes(currentVal)) {
+      dropdown.setValue(currentVal);
+    }
+  }
+};
+
+Blockly.Generator.R.forBlock["group_by"] = function(block) {
+  const groupColumn = block.getFieldValue("GROUP_COL");
+  return `grouped <- split(data, data$${groupColumn})\n`;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // --- Utility and Array Operation Blocks ---
 // Blocks for array manipulation and other utility functions

@@ -444,36 +444,6 @@ Blockly.Generator.R.forBlock["group_by"] = function(block) {
   return `grouped <- split(data, data$${groupColumn})\n`;
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // --- Utility and Array Operation Blocks ---
 // Blocks for array manipulation and other utility functions
 

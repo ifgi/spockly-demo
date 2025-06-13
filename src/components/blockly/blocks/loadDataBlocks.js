@@ -2,9 +2,9 @@ import * as Blockly from "blockly";
 
 // --- Data Loading Blocks ---
 // Blocks to load various types of data sources into the workspace
-
+  
 Blockly.defineBlocksWithJsonArray([
-	{
+  {
 	  type: "load_csv",
 	  message0: "load CSV file %1",
 	  args0: [
@@ -19,14 +19,6 @@ Blockly.defineBlocksWithJsonArray([
 	  tooltip: "Load a CSV file from WebR filesystem",
 	  helpUrl: "https://www.rdocumentation.org/packages/utils/versions/3.6.2/topics/read.table",
 	},
-  ]);
-  
-  Blockly.Generator.R.forBlock["load_csv"] = function (block, generator) {
-	const filename = block.getFieldValue("FILENAME");
-	return [`read.csv("${filename}")`, Blockly.Generator.R.ORDER_NONE];
-  };
-	  
-Blockly.defineBlocksWithJsonArray([
   {
     type: "load_shapefile",
     message0: "load shapefile %1",
@@ -108,14 +100,14 @@ Blockly.defineBlocksWithJsonArray([
       {
         type: "field_dropdown",
         name: "DATASET",
-        options: [["iris", "iris"], ["mtcars", "mtcars"], ["airquality", "airquality"]]
+        options: [["iris", "iris"], ["mtcars", "mtcars"], ["airquality", "airquality"], ["meuse", "meuse"]]
       }
     ],
     previousStatement: null,
     nextStatement: null,
     output: null,
     colour: "#FFA726",
-    tooltip: "Load a built-in dataset like iris",
+    tooltip: "Load a built-in dataset like iris e.t.c ",
     helpUrl: "https://www.rdocumentation.org/packages/datasets/versions/3.6.2/topics/iris"
   },
   {
@@ -125,7 +117,7 @@ Blockly.defineBlocksWithJsonArray([
       {
         type: "field_dropdown",
         name: "DATASET",
-        options: [["iris", "iris"], ["mtcars", "mtcars"], ["airquality", "airquality"]]
+        options: [["iris", "iris"], ["mtcars", "mtcars"], ["airquality", "airquality"], ["meuse", "meuse"]]
       }
     ],
     output: "DataFrame",
@@ -148,6 +140,50 @@ Blockly.defineBlocksWithJsonArray([
     helpUrl: "https://www.rdocumentation.org/packages/httr/versions/1.4.2/topics/GET"
   }
 ]);
+
+// Generator for load_csv block
+Blockly.Generator.R.forBlock['load_csv'] = function(block) {
+  var filename = block.getFieldValue('FILENAME');
+  Blockly.Generator.R.addLibrary('readr');
+  
+  var code = 'read_csv("' + filename + '")';
+  return [code, Blockly.Generator.R.ORDER_FUNCTION_CALL];
+};
+
+// Generator for load_shapefile block
+Blockly.Generator.R.forBlock['load_shapefile'] = function(block) {
+  var filename = block.getFieldValue('FILENAME');
+  Blockly.Generator.R.addLibrary('sf');
+  
+  var code = 'st_read("' + filename + '")';
+  return [code, Blockly.Generator.R.ORDER_FUNCTION_CALL];
+};
+
+// Generator for load_raster block
+Blockly.Generator.R.forBlock['load_raster'] = function(block) {
+  var filename = block.getFieldValue('FILENAME');
+  Blockly.Generator.R.addLibrary('stars');
+  
+  var code = 'read_stars("' + filename + '")';
+  return [code, Blockly.Generator.R.ORDER_FUNCTION_CALL];
+};
+
+Blockly.Generator.R.forBlock["load_builtin_dataset"] = function(block) {
+  const dataset = block.getFieldValue("DATASET");
+  if (dataset === "meuse") {
+    return `library(sp)\ndata(meuse)\ndata <- meuse\n`;
+  } else {
+    return `data <- ${dataset}\n`;
+  }
+};
+
+// Generator for get_dataset block
+Blockly.Generator.R.forBlock['get_dataset'] = function(block) {
+  var dataset = block.getFieldValue('DATASET');
+  var code = dataset;
+  return [code, Blockly.Generator.R.ORDER_ATOMIC];
+};
+
 
 // --- Data Transformation Blocks ---
 // Blocks to manipulate and transform dataframes

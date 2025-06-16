@@ -1,7 +1,58 @@
 import * as Blockly from "blockly";
+import datasetColumnsMap from "../constants/constants";
+
+
+// Helper functions for dynamic dropdowns
+const getLoadedDatasetColumns = (workspace) => {
+  const blocks = workspace.getAllBlocks(false);
+  for (let i = blocks.length - 1; i >= 0; i--) {
+    const block = blocks[i];
+    if (block.type === 'load_builtin_dataset' && block.getFieldValue) {
+      const dataset = block.getFieldValue("DATASET");
+      return datasetColumnsMap[dataset] || [];
+    }
+  }
+  return [];
+};
+
+const getDropdownOptions = (workspace) => {
+  const defaultOptions = [["Select column", ""]];
+  const columns = getLoadedDatasetColumns(workspace);
+  return columns.length > 0 ? columns : defaultOptions;
+};
+
+const getDropdownOptionsWithNone = (workspace) => {
+  const columns = getLoadedDatasetColumns(workspace);
+  return [["None", "None"], ...columns];
+};
+
+// Update dropdown function
+const updateDropdowns = function(block, fieldNames) {
+  const workspace = block.workspace;
+  fieldNames.forEach(fieldName => {
+    const field = block.getField(fieldName);
+    if (!field) return;
+    
+    const current = field.getValue();
+    let newOptions;
+    
+    if (fieldName === 'COLORVAR' || fieldName === 'GROUPVAR') {
+      newOptions = getDropdownOptionsWithNone(workspace);
+    } else {
+      newOptions = getDropdownOptions(workspace);
+    }
+    
+    field.menuGenerator_ = newOptions;
+    const valid = newOptions.map(opt => opt[1]);
+    if (valid.includes(current)) {
+      field.setValue(current);
+    } else {
+      field.setValue(valid[0]);
+    }
+  });
+};
 
 // ------------------------ Block definition text vizualization inbuilt datasets------------------------ //
-
 Blockly.defineBlocksWithJsonArray([
   // Show first N rows
   {
@@ -54,7 +105,7 @@ Blockly.defineBlocksWithJsonArray([
     helpUrl: ""
   },
 
-  // Print full dataset  (NOTE TO SELF MAKE PRINTING MORE DYNAMIC, I.E SELECT COLUMN  ROW etc)
+  // Print full dataset
   {
     type: "print_data",
     message0: "print full dataset",
@@ -75,27 +126,158 @@ Blockly.defineBlocksWithJsonArray([
     tooltip: "Preview the dataset by showing the top and bottom rows",
     helpUrl: ""
   },
+
+  // Bar chart
   {
     type: "barplot_block",
     message0: "bar chart of %1",
-    args0: [{ type: "input_value", name: "DATA" }],
+    args0: [
+      {
+        type: "field_dropdown",
+        name: "COLUMN",
+        options: [["Select column", ""]]
+      }
+    ],
     previousStatement: null,
     nextStatement: null,
     colour: "#90A4AE",
     tooltip: "Generate a bar chart of the data",
     helpUrl: "https://www.rdocumentation.org/packages/graphics/versions/3.6.2/topics/barplot"
   },
+
+  // Pie chart
   {
     type: "piechart_block",
     message0: "pie chart of %1",
-    args0: [{ type: "input_value", name: "DATA" }],
+    args0: [
+      {
+        type: "field_dropdown",
+        name: "COLUMN",
+        options: [["Select column", ""]]
+      }
+    ],
     previousStatement: null,
     nextStatement: null,
     colour: "#90A4AE",
     tooltip: "Generate a pie chart of the data",
     helpUrl: "https://www.rdocumentation.org/packages/graphics/versions/3.6.2/topics/pie"
   },
+
+  // Scatter plot
+  {
+    type: "plot_scatter",
+    message0: "scatter plot of X: %1 Y: %2 Color by: %3",
+    args0: [
+      {
+        type: "field_dropdown",
+        name: "XVAR",
+        options: [["Select column", ""]]
+      },
+      {
+        type: "field_dropdown",
+        name: "YVAR",
+        options: [["Select column", ""]]
+      },
+      {
+        type: "field_dropdown",
+        name: "COLORVAR",
+        options: [["None", "None"]]
+      }
+    ],
+    previousStatement: null,
+    nextStatement: null,
+    colour: "#90A4AE",
+    tooltip: "Plot selected data using scatter plot",
+    helpUrl: "https://www.rdocumentation.org/packages/graphics/versions/3.6.2/topics/plot"
+  },
+
+  // Histogram
+  {
+    type: "plot_histogram",
+    message0: "Histogram of %1",
+    args0: [
+      {
+        type: "field_dropdown",
+        name: "COLUMN",
+        options: [["Select column", ""]]
+      }
+    ],
+    previousStatement: null,
+    nextStatement: null,
+    colour: "#90A4AE",
+    tooltip: "Plot histogram of selected column",
+    helpUrl: "https://www.rdocumentation.org/packages/graphics/versions/3.6.2/topics/hist"
+  },
+
+  // Boxplot
+  {
+    type: "plot_boxplot",
+    message0: "Boxplot of %1 Grouped by %2",
+    args0: [
+      {
+        type: "field_dropdown",
+        name: "COLUMN",
+        options: [["Select column", ""]]
+      },
+      {
+        type: "field_dropdown",
+        name: "GROUPVAR",
+        options: [["None", "None"]]
+      }
+    ],
+    previousStatement: null,
+    nextStatement: null,
+    colour: "#90A4AE",
+    tooltip: "Boxplot of a column, optionally grouped by another column",
+    helpUrl: "https://www.rdocumentation.org/packages/graphics/versions/3.6.2/topics/boxplot"
+  }
 ]);
+
+// Add the onchange event handlers after block creation
+Blockly.Blocks['barplot_block'].onchange = function(event) {
+  if (event.type === Blockly.Events.FINISHED_LOADING || 
+      event.type === Blockly.Events.BLOCK_CREATE ||
+      event.type === Blockly.Events.BLOCK_DELETE ||
+      event.type === Blockly.Events.BLOCK_CHANGE) {
+    updateDropdowns(this, ['COLUMN']);
+  }
+};
+
+Blockly.Blocks['piechart_block'].onchange = function(event) {
+  if (event.type === Blockly.Events.FINISHED_LOADING || 
+      event.type === Blockly.Events.BLOCK_CREATE ||
+      event.type === Blockly.Events.BLOCK_DELETE ||
+      event.type === Blockly.Events.BLOCK_CHANGE) {
+    updateDropdowns(this, ['COLUMN']);
+  }
+};
+
+Blockly.Blocks['plot_scatter'].onchange = function(event) {
+  if (event.type === Blockly.Events.FINISHED_LOADING || 
+      event.type === Blockly.Events.BLOCK_CREATE ||
+      event.type === Blockly.Events.BLOCK_DELETE ||
+      event.type === Blockly.Events.BLOCK_CHANGE) {
+    updateDropdowns(this, ['XVAR', 'YVAR', 'COLORVAR']);
+  }
+};
+
+Blockly.Blocks['plot_histogram'].onchange = function(event) {
+  if (event.type === Blockly.Events.FINISHED_LOADING || 
+      event.type === Blockly.Events.BLOCK_CREATE ||
+      event.type === Blockly.Events.BLOCK_DELETE ||
+      event.type === Blockly.Events.BLOCK_CHANGE) {
+    updateDropdowns(this, ['COLUMN']);
+  }
+};
+
+Blockly.Blocks['plot_boxplot'].onchange = function(event) {
+  if (event.type === Blockly.Events.FINISHED_LOADING || 
+      event.type === Blockly.Events.BLOCK_CREATE ||
+      event.type === Blockly.Events.BLOCK_DELETE ||
+      event.type === Blockly.Events.BLOCK_CHANGE) {
+    updateDropdowns(this, ['COLUMN', 'GROUPVAR']);
+  }
+};
 
 // ------------ R code generator text vizualization inbuilt datasets------------- //
 
@@ -122,93 +304,38 @@ Blockly.Generator.R.forBlock["preview_data"] = function(block) {
   return `rbind(head(data, 3), tail(data, 3))\n`;
 };
 
-
 // ------------ R code generator plots vizualization inbuilt datasets------------- //
 
 
-// plot_scatter plot block
-Blockly.Blocks['plot_scatter'] = {
-  init: function () {
-    this.appendDummyInput()
-      .appendField("scatter plot of")
-      .appendField("X:")
-      .appendField(new Blockly.FieldDropdown(this.getDropdownOptions.bind(this)), "XVAR")
-      .appendField("Y:")
-      .appendField(new Blockly.FieldDropdown(this.getDropdownOptions.bind(this)), "YVAR")
-      .appendField("Color by:")
-      .appendField(new Blockly.FieldDropdown(this.getDropdownOptionsWithNone.bind(this)), "COLORVAR");
-
-    this.setPreviousStatement(true, null);
-    this.setNextStatement(true, null);
-    this.setColour("#90A4AE");
-    this.setTooltip("Plot selected data using ggplot2");
-    this.setHelpUrl("https://www.rdocumentation.org/packages/graphics/versions/3.6.2/topics/plot");
-
-    this.workspace.addChangeListener(this.onWorkspaceChange.bind(this));
-  },
-  getDropdownOptions: function () {
-    const defaultOptions = [["Select column", ""]];
-    const columns = this.getLoadedDatasetColumns();
-    return columns.length > 0 ? columns : defaultOptions;
-  },
-
-  getDropdownOptionsWithNone: function () {
-    const columns = this.getLoadedDatasetColumns();
-    return [["None", "None"], ...columns];
-  },
-
-  getLoadedDatasetColumns: function () {
-    const blocks = this.workspace.getAllBlocks(false);
-    for (let i = blocks.length - 1; i >= 0; i--) {
-      const block = blocks[i];
-      if (block.type === 'load_builtin_dataset' && block.getFieldValue) {
-        const dataset = block.getFieldValue("DATASET");
-        return datasetColumnsMap[dataset] || [];
-      }
-    }
-    return [];
-  },
-
-  onWorkspaceChange: function (event) {
-    if (
-      event.type === Blockly.Events.BLOCK_CHANGE ||
-      event.type === Blockly.Events.BLOCK_CREATE ||
-      event.type === Blockly.Events.BLOCK_DELETE
-    ) {
-      this.updateDropdowns();
-    }
-  },
-    updateDropdowns: function () {
-      const xField = this.getField('XVAR');
-      const yField = this.getField('YVAR');
-      const colorField = this.getField('COLORVAR');
-    
-      if (!xField || !yField || !colorField) return;
-    
-      const currentX = xField.getValue();
-      const currentY = yField.getValue();
-      const currentColor = colorField.getValue();
-    
-      const newXOptions = this.getDropdownOptions();
-      const newYOptions = this.getDropdownOptions();
-      const newColorOptions = this.getDropdownOptionsWithNone();
-    
-      xField.menuGenerator_ = newXOptions;
-      yField.menuGenerator_ = newYOptions;
-      colorField.menuGenerator_ = newColorOptions;
-    
-      const validX = newXOptions.map(opt => opt[1]);
-      const validY = newYOptions.map(opt => opt[1]);
-      const validColor = newColorOptions.map(opt => opt[1]);
-    
-
-      xField.setValue(validX.includes(currentX) ? currentX : validX[0]);
-      yField.setValue(validY.includes(currentY) ? currentY : validY[0]);
-      colorField.setValue(validColor.includes(currentColor) ? currentColor : validColor[0]);
-    }
-    
+// Bar chart generator
+Blockly.Generator.R.forBlock["barplot_block"] = function(block) {
+  const column = block.getFieldValue("COLUMN");
+  const varName = `dataset$${column}`;
+  const varTitle = `Bar Chart of ${column}`;
+  let code = '';
+  code += 'dataset <- data\n';
+  code += `counts <- table(${varName})\n`;
+  code += `bar_colors <- rainbow(length(counts))\n`;
+  code += `barplot(counts, main="${varTitle}", xlab="${column}", ylab="Frequency", col=bar_colors)\n`;
+  code += `legend("topright", legend=names(counts), fill=bar_colors, title="${column}")\n`;
+  return code;
 };
-// scatter-plot rgenerater
+
+
+//piechart generator
+
+Blockly.Generator.R.forBlock["piechart_block"] = function(block) {
+  const column = block.getFieldValue("COLUMN");
+  let code = '';
+  code += 'dataset <- data\n';
+  code += `counts <- table(dataset$${column})\n`;
+  code += `percentages <- round(100 * counts / sum(counts), 1)\n`;
+  code += `labels <- paste(names(counts), ":", percentages, "%")\n`;
+  code += `pie(counts, labels=labels, main="Pie Chart of ${column}", col=rainbow(length(counts)))\n`;
+  return code;
+};
+
+// scatter-plot generator
 Blockly.Generator.R.forBlock["plot_scatter"] = function(block) {
   const xVar = block.getFieldValue("XVAR");
   const yVar = block.getFieldValue("YVAR");
@@ -227,64 +354,7 @@ Blockly.Generator.R.forBlock["plot_scatter"] = function(block) {
   return code;
 };
 
-//histogram
-Blockly.Blocks['plot_histogram'] = {
-  init: function () {
-    this.appendDummyInput()
-      .appendField("Histogram of")
-      .appendField(new Blockly.FieldDropdown(this.getDropdownOptions.bind(this)), "COLUMN");
-
-    this.setPreviousStatement(true, null);
-    this.setNextStatement(true, null);
-    this.setColour("#90A4AE");
-    this.setTooltip("Plot histogram of selected column");
-    this.setHelpUrl("https://www.rdocumentation.org/packages/graphics/versions/3.6.2/topics/hist");
-
-    this.workspace.addChangeListener(this.onWorkspaceChange.bind(this));
-  },
-
-  getDropdownOptions: function () {
-    const defaultOptions = [["Select column", ""]];
-    const columns = this.getLoadedDatasetColumns();
-    return columns.length > 0 ? columns : defaultOptions;
-  },
-
-  getLoadedDatasetColumns: function () {
-    const blocks = this.workspace.getAllBlocks(false);
-    for (let i = blocks.length - 1; i >= 0; i--) {
-      const block = blocks[i];
-      if (block.type === 'load_builtin_dataset' && block.getFieldValue) {
-        const dataset = block.getFieldValue("DATASET");
-        return datasetColumnsMap[dataset] || [];
-      }
-    }
-    return [];
-  },
-
-  onWorkspaceChange: function (event) {
-    if (
-      event.type === Blockly.Events.BLOCK_CHANGE ||
-      event.type === Blockly.Events.BLOCK_CREATE ||
-      event.type === Blockly.Events.BLOCK_DELETE
-    ) {
-      this.updateDropdowns();
-    }
-  },
-    updateDropdowns: function () {
-      const columnField = this.getField('COLUMN');
-    
-      if (!columnField) return;
-    
-      const current = columnField.getValue();
-      const newOptions = this.getDropdownOptions();
-      columnField.menuGenerator_ = newOptions;
-    
-      const valid = newOptions.map(opt => opt[1]);
-      if (valid.includes(current)) columnField.setValue(current);
-    }
-    
-};
-
+// histogram generator
 Blockly.Generator.R.forBlock["plot_histogram"] = function(block) {
   const column = block.getFieldValue("COLUMN");
   let code = '';
@@ -293,85 +363,7 @@ Blockly.Generator.R.forBlock["plot_histogram"] = function(block) {
   return code;
 };
 
-
-//boxplot
-
-Blockly.Blocks['plot_boxplot'] = {
-  init: function () {
-    this.appendDummyInput()
-      .appendField("Boxplot of")
-      .appendField(new Blockly.FieldDropdown(this.getDropdownOptions.bind(this)), "COLUMN")
-      .appendField("Grouped by")
-      .appendField(new Blockly.FieldDropdown(this.getDropdownOptionsWithNone.bind(this)), "GROUPVAR");
-
-    this.setPreviousStatement(true, null);
-    this.setNextStatement(true, null);
-    this.setColour("#90A4AE");
-    this.setTooltip("Boxplot of a column, optionally grouped by another column");
-    this.setHelpUrl("https://www.rdocumentation.org/packages/graphics/versions/3.6.2/topics/boxplot");
-
-    this.workspace.addChangeListener(this.onWorkspaceChange.bind(this));
-  },
-
-  getDropdownOptions: function () {
-    const defaultOptions = [["Select column", ""]];
-    const columns = this.getLoadedDatasetColumns();
-    return columns.length > 0 ? columns : defaultOptions;
-  },
-
-  getDropdownOptionsWithNone: function () {
-    const columns = this.getLoadedDatasetColumns();
-    return [["None", "None"], ...columns];
-  },
-
-  getLoadedDatasetColumns: function () {
-    const blocks = this.workspace.getAllBlocks(false);
-    for (let i = blocks.length - 1; i >= 0; i--) {
-      const block = blocks[i];
-      if (block.type === 'load_builtin_dataset' && block.getFieldValue) {
-        const dataset = block.getFieldValue("DATASET");
-        return datasetColumnsMap[dataset] || [];
-      }
-    }
-    return [];
-  },
-
-  onWorkspaceChange: function (event) {
-    if (
-      event.type === Blockly.Events.BLOCK_CHANGE ||
-      event.type === Blockly.Events.BLOCK_CREATE ||
-      event.type === Blockly.Events.BLOCK_DELETE
-    ) {
-      this.updateDropdowns();
-    }
-  },
-    updateDropdowns: function () {
-      const columnField = this.getField('COLUMN');
-      const groupField = this.getField('GROUPVAR');
-    
-      if (!columnField || !groupField) {
-        return;
-      }
-    
-      const currentColumn = columnField.getValue();
-      const currentGroup = groupField.getValue();
-    
-      const columnOptions = this.getDropdownOptions();
-      const groupOptions = this.getDropdownOptionsWithNone();
-    
-      columnField.menuGenerator_ = columnOptions;
-      groupField.menuGenerator_ = groupOptions;
-    
-      const validCols = columnOptions.map(opt => opt[1]);
-      const validGroups = groupOptions.map(opt => opt[1]);
-    
-      if (validCols.includes(currentColumn)) columnField.setValue(currentColumn);
-      if (validGroups.includes(currentGroup)) groupField.setValue(currentGroup);
-    }
-    
-    
-};
-
+// boxplot generator
 Blockly.Generator.R.forBlock["plot_boxplot"] = function(block) {
   const column = block.getFieldValue("COLUMN");
   const groupVar = block.getFieldValue("GROUPVAR");
@@ -388,4 +380,3 @@ Blockly.Generator.R.forBlock["plot_boxplot"] = function(block) {
 
   return code;
 };
-

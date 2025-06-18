@@ -1,6 +1,3 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// Imports
-// ─────────────────────────────────────────────────────────────────────────────
 import {
   Box,
   Tab,
@@ -15,35 +12,34 @@ import {
   ListItemText,
   Divider
 } from "@mui/material";
-
 import SearchIcon from "@mui/icons-material/Search";
 import DownloadIcon from "@mui/icons-material/Download";
-
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-
 import { useLocation } from "react-router-dom";
 import TabPanel from "../../components/TabPanel";
+import WebRRunner from "../../components/WebRRunner";
 import tutorialData from "../../data/tutorialData.json";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Main Component
-// ─────────────────────────────────────────────────────────────────────────────
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+
 const Tutorials = ({ isDarkMode }) => {
-  const [value, setValue] = useState(0); // active tab index
-  const [isGerman, setIsGerman] = useState(false); // language toggle
-  const [searchTerm, setSearchTerm] = useState(""); // search bar input
-  const [searchResults, setSearchResults] = useState([]); // search result list
+  const [value, setValue] = useState(0);
+  const [isGerman, setIsGerman] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
   const location = useLocation();
   const theme = useTheme();
+  const webRRef = useRef(null);
 
-  // Handles tab change
+  // Change active tutorial tab
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
 
-  // Search filter logic
+  // Handle content search
   const handleSearch = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
@@ -58,13 +54,14 @@ const Tutorials = ({ isDarkMode }) => {
         .filter((tut) =>
           (tut.headline + tut.description).toLowerCase().includes(value.toLowerCase())
         );
+
       setSearchResults(results);
     } else {
       setSearchResults([]);
     }
   };
 
-  // Jump to selected tutorial when search result is clicked
+  // Jump to selected tutorial result
   const jumpToTutorial = (index) => {
     setValue(index);
     setSearchResults([]);
@@ -73,7 +70,7 @@ const Tutorials = ({ isDarkMode }) => {
 
   return (
     <Box sx={{ display: "flex", minHeight: "calc(100vh - 64px)", position: "relative" }}>
-      {/* Sidebar with tabs and language toggle */}
+      {/* Sidebar with language toggle and tutorial list */}
       <Box
         sx={{
           width: 250,
@@ -86,16 +83,11 @@ const Tutorials = ({ isDarkMode }) => {
         <Typography
           variant="h6"
           fontWeight="bold"
-          sx={{
-            marginBottom: 2,
-            paddingLeft: 1,
-            color: isDarkMode ? "#FFFFFF" : "#000000",
-          }}
+          sx={{ marginBottom: 2, paddingLeft: 1, color: isDarkMode ? "#FFFFFF" : "#000000" }}
         >
           Tutorials
         </Typography>
 
-        {/* Language Switch Button */}
         <Button
           variant="outlined"
           sx={{
@@ -113,7 +105,6 @@ const Tutorials = ({ isDarkMode }) => {
           {isGerman ? "Switch to English" : "Zur deutschen Version"}
         </Button>
 
-        {/* Tutorial Tab List */}
         <Tabs
           orientation="vertical"
           variant="scrollable"
@@ -150,7 +141,7 @@ const Tutorials = ({ isDarkMode }) => {
         </Tabs>
       </Box>
 
-      {/* Main Content Area */}
+      {/* Main content with tutorial markdown, search and optional code runner */}
       <Box
         sx={{
           color: isDarkMode ? "#FFFFFA" : "#000000",
@@ -175,8 +166,6 @@ const Tutorials = ({ isDarkMode }) => {
               ),
             }}
           />
-
-          {/* Search Results */}
           {searchResults.length > 0 && (
             <List dense sx={{ backgroundColor: isDarkMode ? "#1e1e1e" : "#f9f9f9", borderRadius: 1, mt: 1 }}>
               {searchResults.map((res, idx) => (
@@ -194,15 +183,12 @@ const Tutorials = ({ isDarkMode }) => {
           )}
         </Box>
 
-        {/* Individual Tab Panels */}
+        {/* Tab Content */}
         {tutorialData.map((tut, index) => (
           <TabPanel key={index} value={value} index={index}>
-            {/* Headline */}
             <Typography variant="h4" fontWeight="bold" gutterBottom>
               {isGerman ? tut.headline_de : tut.headline}
             </Typography>
-
-            {/* Markdown Content (incl. tables) */}
             <Box
               sx={{
                 '& table': {
@@ -229,9 +215,37 @@ const Tutorials = ({ isDarkMode }) => {
                 {isGerman ? tut.description_de : tut.description}
               </ReactMarkdown>
 
-              {/* Downloads (if available) */}
+              {/* Optional: R code runner */}
+              {tut.r_code && (
+                <Box mt={4}>
+                  <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                    {isGerman ? "Teste den Code unten direkt in R:" : "Try the code below in R:"}
+                  </Typography>
+                  <SyntaxHighlighter language="r" style={oneDark}>
+                    {tut.r_code}
+                  </SyntaxHighlighter>
+                  <Box
+                    sx={{
+                      mt: 2,
+                      borderRadius: 2,
+                      overflow: "hidden",
+                      border: "1px solid",
+                      borderColor: isDarkMode ? "#444" : "#ccc",
+                      backgroundColor: isDarkMode ? "#1e1e1e" : "#fefefe"
+                    }}
+                  >
+                    <WebRRunner
+                      code={tut.r_code}
+                      isDarkMode={isDarkMode}
+                      webRRef={webRRef}
+                    />
+                  </Box>
+                </Box>
+              )}
+
+              {/* Optional: File downloads */}
               {tut.downloads && tut.downloads.length > 0 && (
-                <Box mt={3}>
+                <Box mt={4}>
                   <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                     {isGerman ? "Beispieldateien herunterladen:" : "Example files to download:"}
                   </Typography>

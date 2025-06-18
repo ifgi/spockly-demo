@@ -39,7 +39,8 @@
         "label": "Download beginner_usecase.R",
         "url": "/data/beginner_usecase.R"
       }
-    ]
+    ],
+    "r_code": "# Load required libraries\nlibrary(sp)\nlibrary(gstat)\nlibrary(ggplot2)\nlibrary(sf)\n\n# Load and prepare meuse dataset (zinc measurements and coordinates)\ndata(meuse)\ncoordinates(meuse) = ~x + y  # Convert to spatial object\n\n# Load and prepare interpolation grid\ndata(meuse.grid)\ncoordinates(meuse.grid) = ~x + y\ngridded(meuse.grid) = TRUE  # Define as spatial grid for interpolation\n\n# Basic summary statistics of zinc values\nsummary(meuse$zinc)\nmean_zinc <- mean(meuse$zinc, na.rm = TRUE)\nsd_zinc <- sd(meuse$zinc, na.rm = TRUE)\ncat(\"Mean zinc:\", mean_zinc, \"\\n\")\ncat(\"SD zinc:\", sd_zinc, \"\\n\")\n\n# Visualize measurement locations with background polygon (river)\ndata(meuse.riv)\nmeuse.sp = SpatialPolygons(list(Polygons(list(Polygon(meuse.riv)), \"meuse.riv\")))\nmeuse.lt = list(\"sp.polygons\", meuse.sp, fill = \"grey\")\nspplot(meuse, \"zinc\", key.space = \"right\", sp.layout = meuse.lt)\n\n# IDW (Inverse Distance Weighting) interpolation of zinc values\nidw_model <- gstat(id = \"zinc\", formula = zinc~1, data = meuse, set = list(idp = 2))\nidw_result <- predict(idw_model, meuse.grid)\n\n# Visualize the IDW interpolation result\nspplot(idw_result[\"zinc.pred\"], main = \"IDW Interpolation of Zinc (p=2)\")\n\n# Plot histogram of zinc concentrations\nhist(meuse$zinc, breaks = 20, main = \"Histogram of Zinc Concentration\", \n     xlab = \"Zinc\", col = \"lightblue\")\n\n# Boxplot of zinc concentrations\nboxplot(meuse$zinc, main = \"Boxplot of Zinc Concentration\", \n        ylab = \"Zinc\", col = \"orange\")\n\n# Fit a linear trend model: zinc concentration as a function of coordinates\ntrend_model <- lm(zinc ~ x + y, data = meuse)\nsummary(trend_model)"
   },
   {
     "headline": "Advanced Use Case: Mapping Litter Data (Student-Collected)",

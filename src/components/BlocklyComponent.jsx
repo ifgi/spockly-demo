@@ -101,6 +101,7 @@ const BlocklyComponent = ({
     <block type="filter_rows"></block>
     <block type="select_columns"></block>
     <block type="subset_rows"></block>
+	<block type="unique_values"></block>
     <block type="subset_column_range"></block>
 	    <block type="rename_column">
       <value name="COLUMN_NUMBER">
@@ -247,6 +248,7 @@ const BlocklyComponent = ({
 	<block type="show_tail"></block>
 	<block type="show_rows"></block>
 	<block type="access_column"></block>
+	<block type="access_s4_slot"></block>
   </category>
 
   <category name="Variables" colour="#7d4561" custom="VARIABLE"></category>
@@ -269,8 +271,9 @@ const BlocklyComponent = ({
     <block type="sin_of"></block>
     <block type="round_value"></block>
     <block type="modulo_values"></block>
-    <block type="math_arithmetic"></block>
+	<block type="create_matrix"></block>
 	<block type="rnorm_block"></block>
+	<block type="math_arithmetic" colour="#FF8A65"></block>
   </category>
 
   <category name="Text" colour="#0f45a3">
@@ -291,6 +294,7 @@ const BlocklyComponent = ({
   <category name="Transformations" colour="#FFD54F">
 	<block type="select_columns"></block>
     <block type="sort_array"></block>
+	<block type="unique_values"></block>
     <block type="stack_data"></block>
     <block type="append_array"></block>
     <block type="create_array"></block>
@@ -300,6 +304,17 @@ const BlocklyComponent = ({
     <block type="subset_column_range"></block>
 	<block type="convert_to_sf"></block>
 	<block type="convert_to_dataframe"></block>
+		    <block type="rename_column">
+      <value name="COLUMN_NUMBER">
+        <block type="math_number">
+          <field name="NUM"></field>
+        </block>
+      </value>
+      <value name="NEW_NAME">
+        <block type="text">
+          <field name="TEXT"></field>
+        </block>
+      </value>
   </category>
 
 <category name="Maps" colour="#67c761">
@@ -493,11 +508,12 @@ const BlocklyComponent = ({
       <block type="plot_xy_setting"></block>
     </statement>
   </block>
-  
+
   <label text="Data Settings" web-class="toolboxLabel"></label>
   <block type="plot_data_setting"></block>
   <block type="plot_xy_setting"></block>
-  
+  <block type="plot_spatial_data_setting"></block>
+
   <label text="Appearance" web-class="toolboxLabel"></label>
   <block type="plot_appearance_setting">
     <statement name="OPTIONS">
@@ -510,7 +526,7 @@ const BlocklyComponent = ({
       </block>
     </statement>
   </block>
-  
+
   <block type="color_option">
     <value name="COLOR">
       <block type="text">
@@ -518,19 +534,27 @@ const BlocklyComponent = ({
       </block>
     </value>
   </block>
-  
+
   <block type="symbol_option">
     <field name="SYMBOL">1</field>
   </block>
-  
+
   <block type="line_type_option">
     <field name="LINE_TYPE">1</field>
   </block>
-  
+
   <block type="size_option">
     <field name="SIZE">1</field>
   </block>
-  
+
+  <block type="color_palette_option">
+    <field name="PALETTE">temp</field>
+  </block>
+
+  <block type="show_points_option">
+    <field name="SHOW">TRUE</field>
+  </block>
+
   <label text="Labels & Titles" web-class="toolboxLabel"></label>
   <block type="plot_labels_setting">
     <statement name="LABELS">
@@ -543,7 +567,7 @@ const BlocklyComponent = ({
       </block>
     </statement>
   </block>
-  
+
   <block type="title_label">
     <value name="TITLE">
       <block type="text">
@@ -551,7 +575,7 @@ const BlocklyComponent = ({
       </block>
     </value>
   </block>
-  
+
   <block type="axis_label">
     <field name="AXIS">x</field>
     <value name="LABEL">
@@ -560,7 +584,7 @@ const BlocklyComponent = ({
       </block>
     </value>
   </block>
-  
+
   <label text="Axis Limits" web-class="toolboxLabel"></label>
   <block type="plot_limits_setting">
     <statement name="LIMITS">
@@ -579,7 +603,7 @@ const BlocklyComponent = ({
       </block>
     </statement>
   </block>
-  
+
   <block type="axis_limit">
     <field name="AXIS">x</field>
     <value name="MIN">
@@ -593,18 +617,18 @@ const BlocklyComponent = ({
       </block>
     </value>
   </block>
-  
+
   <label text="Legend" web-class="toolboxLabel"></label>
   <block type="plot_legend_setting">
     <field name="SHOW">TRUE</field>
     <field name="POSITION">topright</field>
   </block>
-  
+
   <label text="Add Layers" web-class="toolboxLabel"></label>
   <block type="add_layer_advanced">
     <field name="LAYER_TYPE">points</field>
   </block>
-  
+
   <label text="Layout" web-class="toolboxLabel"></label>
   <block type="layout_advanced">
     <field name="ROWS">2</field>
@@ -613,7 +637,10 @@ const BlocklyComponent = ({
   </block>
 </category>
 
+
   <category name="Geometry" colour="#4DD0E1">
+    <block type="set_coordinates_sp"></block>
+	<block type="set_crs"></block>
     <block type="st_centroid"></block>
     <block type="st_transform"></block>
     <block type="st_buffer"></block>

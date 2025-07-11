@@ -141,3 +141,56 @@ Blockly.defineBlocksWithJsonArray([
   }
 
 ]);
+
+Blockly.defineBlocksWithJsonArray([
+	{
+	  type: "create_matrix",
+	  message0: "create matrix from %1 with %2 rows and %3 columns %4 fill by %5",
+	  args0: [
+		{
+		  type: "input_value",
+		  name: "DATA",
+		  check: ["Vector", "Array", "Variable"]
+		},
+		{
+		  type: "input_value",
+		  name: "NROW",
+		  check: "Number"
+		},
+		{
+		  type: "input_value",
+		  name: "NCOL",
+		  check: "Number"
+		},
+		{
+		  type: "input_dummy"
+		},
+		{
+		  type: "field_dropdown",
+		  name: "BYROW",
+		  options: [
+			["column", "FALSE"],
+			["row", "TRUE"]
+		  ]
+		}
+	  ],
+	  output: "Matrix",
+	  colour: "#FF8A65",
+	  tooltip: "Create a matrix from data with specified dimensions",
+	  helpUrl: "https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/matrix"
+	}
+  ]);
+  
+  Blockly.Generator.R.forBlock['create_matrix'] = function(block, generator) {
+	const data = generator.valueToCode(block, 'DATA', Blockly.Generator.R.ORDER_ATOMIC) || 'c()';
+	const nrow = generator.valueToCode(block, 'NROW', Blockly.Generator.R.ORDER_ATOMIC) || '1';
+	const ncol = generator.valueToCode(block, 'NCOL', Blockly.Generator.R.ORDER_ATOMIC) || '1';
+	const byrow = block.getFieldValue('BYROW');
+	
+	const code = `matrix(${data}, nrow = ${nrow}, ncol = ${ncol}, byrow = ${byrow})`;
+	
+	if (block.outputConnection && !block.outputConnection.isConnected()) {
+	  return code + '\n';
+	}
+	return [code, Blockly.Generator.R.ORDER_ATOMIC];
+  };

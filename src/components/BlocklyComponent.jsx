@@ -43,6 +43,7 @@ const BlocklyComponent = ({
 	<block type="plot_vector"></block>
 	<block type="load_geojson_to_leaflet"></block>
 	<block type="load_csv_to_leaflet"></block>
+	<block type="krigging_temperature_interpolation"></block>
   </category>
 
   <category name="Load Data" colour="#FFA726">

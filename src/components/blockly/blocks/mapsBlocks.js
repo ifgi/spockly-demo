@@ -881,8 +881,7 @@ if (file_extension == "geojson") {
 
 Blockly.Generator.R.forBlock['save_map_beginner'] = function(block, generator) {
     const filename = block.getFieldValue('FILENAME');
-    const code = `htmlwidgets::saveWidget(leaflet_map, file = "${filename}", selfcontained = TRUE)
-message("Map saved as ${filename}")\n`;
+    const code = `htmlwidgets::saveWidget(leaflet_map, file = "${filename}", selfcontained = TRUE)`;
     return code;
 };
 

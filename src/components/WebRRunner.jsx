@@ -797,10 +797,8 @@ const WebRRunner = ({ code, isDarkMode, webRRef, setCurrentPackage }) => {
     return leafletPatterns.some(pattern => pattern.test(code));
   };
 
-  // FIX FOR FORMATTED OUTPUT
   const captureFormattedOutput = async (webRInstance, code) => {
     try {
-      // First, try to capture the output using capture.output
       const captureResult = await webRInstance.evalR(`
         # Capture the formatted output
         captured <- capture.output({
@@ -811,13 +809,11 @@ const WebRRunner = ({ code, isDarkMode, webRRef, setCurrentPackage }) => {
       
       const capturedString = await captureResult.toString();
       
-      // Filter out startup messages and check if we got meaningful output
       const filtered = filterRStartupMessages(capturedString);
       if (filtered && filtered.trim() !== "" && filtered !== "NULL") {
         return filtered;
       }
       
-      // Otherwise, try the regular evaluation
       const result = await webRInstance.evalR(code);
       if (result) {
         const str = await result.toString();
@@ -829,7 +825,6 @@ const WebRRunner = ({ code, isDarkMode, webRRef, setCurrentPackage }) => {
       
       return null;
     } catch (err) {
-      // If capture.output fails, fall back to regular evaluation
       try {
         const result = await webRInstance.evalR(code);
         if (result) {
@@ -844,21 +839,17 @@ const WebRRunner = ({ code, isDarkMode, webRRef, setCurrentPackage }) => {
   };
 
   const formatROutput = (output) => {
-    // Clean up R's default output formatting
     return output
-      .replace(/\[1\]\s*/g, '') // Remove [1] indices
-      .replace(/\n\s*\n/g, '\n') // Remove extra blank lines
+      .replace(/\[1\]\s*/g, '') 
+      .replace(/\n\s*\n/g, '\n') 
       .trim();
   };
 
-  // Filter out R startup messages and other unwanted output
   const filterRStartupMessages = (text) => {
     if (!text) return '';
     
-    // Split into lines for line-by-line filtering
     const lines = text.split('\n');
     
-    // Patterns to filter out (comprehensive list)
     const filterPatterns = [
       /^R version \d+\.\d+\.\d+/,
       /^Copyright \(C\)/,
@@ -895,20 +886,16 @@ const WebRRunner = ({ code, isDarkMode, webRRef, setCurrentPackage }) => {
 	  /^'help\.start\(\)' for an HTML browser interface to help/,
     ];
     
-    // Filter out lines that match any pattern
     const filteredLines = lines.filter(line => {
       const trimmedLine = line.trim();
-      // Keep empty lines between actual content, but not standalone empty lines
       if (trimmedLine === '') {
-        return false; // We'll re-add spacing as needed
+        return false; 
       }
       return !filterPatterns.some(pattern => pattern.test(trimmedLine));
     });
     
-    // Join lines and clean up extra whitespace
     let result = filteredLines.join('\n').trim();
     
-    // Remove multiple consecutive newlines
     result = result.replace(/\n{3,}/g, '\n\n');
     
     return result;
@@ -922,7 +909,6 @@ const WebRRunner = ({ code, isDarkMode, webRRef, setCurrentPackage }) => {
         setWebRReady(true);
         if (webRRef) webRRef.current = webR;
 
-        // Suppress startup messages
         await webR.evalRVoid(`
           options(
             verbose = FALSE,
@@ -933,7 +919,6 @@ const WebRRunner = ({ code, isDarkMode, webRRef, setCurrentPackage }) => {
           })
         `);
 
-        // load co2 csv for basic usecase tutorial
         try {
           const response = await fetch("/co2.csv");
           const text = await response.text();
@@ -947,7 +932,6 @@ const WebRRunner = ({ code, isDarkMode, webRRef, setCurrentPackage }) => {
         await installAndLoadPackages();
         await setupSfPackage();
         
-        // Re-enable warnings after initialization
         await webR.evalRVoid(`options(warn = 0)`);
       } catch (err) {
         console.error("WebR init failed:", err);
@@ -1029,11 +1013,9 @@ const WebRRunner = ({ code, isDarkMode, webRRef, setCurrentPackage }) => {
 	  let leafletHandled = false;
 	  
 	  try {
-		// Check if the code contains functions that need formatted output
 		const needsFormattedOutput = /summary\s*\(|str\s*\(|head\s*\(|tail\s*\(|table\s*\(|print\s*\(/i.test(cleanedCode);
 		
 		if (needsFormattedOutput) {
-		  // Use our enhanced capture method for formatted functions
 		  const formattedOutput = await captureFormattedOutput(webRForExecution, cleanedCode);
 		  if (formattedOutput) {
 			const filtered = filterRStartupMessages(formattedOutput);

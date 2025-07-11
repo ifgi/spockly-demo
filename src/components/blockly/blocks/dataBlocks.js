@@ -162,8 +162,8 @@ Blockly.defineBlocksWithJsonArray([
 ]);
 
 Blockly.Generator.R.forBlock["data_table"] = function (block, generator) {
-  const data = generator.valueToCode(block, "DATA", Blockly.Generator.R.ORDER_ATOMIC);
-  return [`table(${data})`, 0];
+  const data = generator.valueToCode(block, "DATA", Blockly.Generator.R.ORDER_NONE);
+  return [`table(${data})`];
 };
 
 Blockly.Generator.R.forBlock['length_data'] = function(block, generator) {

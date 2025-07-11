@@ -35,7 +35,7 @@ Blockly.defineBlocksWithJsonArray([
       ],
       previousStatement: null,
       nextStatement: null,
-      colour: "#0f45a3",
+      colour: "160",
       tooltip: "Plot a vector using plot()",
       helpUrl: "",
     },

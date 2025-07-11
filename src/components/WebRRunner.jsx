@@ -797,12 +797,141 @@ const WebRRunner = ({ code, isDarkMode, webRRef, setCurrentPackage }) => {
     return leafletPatterns.some(pattern => pattern.test(code));
   };
 
+  // FIX FOR FORMATTED OUTPUT
+  const captureFormattedOutput = async (webRInstance, code) => {
+    try {
+      // First, try to capture the output using capture.output
+      const captureResult = await webRInstance.evalR(`
+        # Capture the formatted output
+        captured <- capture.output({
+          ${code}
+        })
+        paste(captured, collapse = "\\n")
+      `);
+      
+      const capturedString = await captureResult.toString();
+      
+      // Filter out startup messages and check if we got meaningful output
+      const filtered = filterRStartupMessages(capturedString);
+      if (filtered && filtered.trim() !== "" && filtered !== "NULL") {
+        return filtered;
+      }
+      
+      // Otherwise, try the regular evaluation
+      const result = await webRInstance.evalR(code);
+      if (result) {
+        const str = await result.toString();
+        const filteredStr = filterRStartupMessages(str);
+        if (filteredStr && filteredStr !== "NULL") {
+          return filteredStr;
+        }
+      }
+      
+      return null;
+    } catch (err) {
+      // If capture.output fails, fall back to regular evaluation
+      try {
+        const result = await webRInstance.evalR(code);
+        if (result) {
+          const str = await result.toString();
+          return filterRStartupMessages(str);
+        }
+      } catch (fallbackErr) {
+        console.error("Error in captureFormattedOutput:", fallbackErr);
+        throw fallbackErr;
+      }
+    }
+  };
+
+  const formatROutput = (output) => {
+    // Clean up R's default output formatting
+    return output
+      .replace(/\[1\]\s*/g, '') // Remove [1] indices
+      .replace(/\n\s*\n/g, '\n') // Remove extra blank lines
+      .trim();
+  };
+
+  // Filter out R startup messages and other unwanted output
+  const filterRStartupMessages = (text) => {
+    if (!text) return '';
+    
+    // Split into lines for line-by-line filtering
+    const lines = text.split('\n');
+    
+    // Patterns to filter out (comprehensive list)
+    const filterPatterns = [
+      /^R version \d+\.\d+\.\d+/,
+      /^Copyright \(C\)/,
+      /^Platform:/,
+      /^R is free software/,
+      /^You are welcome to redistribute/,
+      /^Type 'license\(\)'/,
+      /^R is a collaborative project/,
+      /^Type 'contributors\(\)'/,
+      /^Type 'demo\(\)'/,
+      /^Type 'q\(\)'/,
+      /^Type 'help\(\)'/,
+      /^Type 'help\.start\(\)'/,
+      /^'citation\(\)' on how to cite/,
+      /^and comes with ABSOLUTELY NO WARRANTY/,
+      /^for more information and/,
+      /^for some demos/,
+      /^for on-line help/,
+      /^for an HTML browser/,
+      /^to quit R\./,
+      /^under certain conditions\./,
+      /^or 'licence\(\)'/,
+      /^in publications\./,
+      /-- "Already Tomorrow"$/,
+      /^Natural language support but running in an English locale$/,
+      /^WARNING: multiple methods tables found/,
+      /^Using built-in specs\./,
+      /^Target:/,
+      /^Configured with:/,
+      /^Thread model:/,
+      /^gcc version/,
+      /^R is a collaborative project with many/,
+      /^\s*$/,
+	  /^'help\.start\(\)' for an HTML browser interface to help/,
+    ];
+    
+    // Filter out lines that match any pattern
+    const filteredLines = lines.filter(line => {
+      const trimmedLine = line.trim();
+      // Keep empty lines between actual content, but not standalone empty lines
+      if (trimmedLine === '') {
+        return false; // We'll re-add spacing as needed
+      }
+      return !filterPatterns.some(pattern => pattern.test(trimmedLine));
+    });
+    
+    // Join lines and clean up extra whitespace
+    let result = filteredLines.join('\n').trim();
+    
+    // Remove multiple consecutive newlines
+    result = result.replace(/\n{3,}/g, '\n\n');
+    
+    return result;
+  };
+
   useEffect(() => {
     const initWebR = async () => {
       try {
         await webR.init();
+		window.webR = webR;
         setWebRReady(true);
         if (webRRef) webRRef.current = webR;
+
+        // Suppress startup messages
+        await webR.evalRVoid(`
+          options(
+            verbose = FALSE,
+            warn = -1
+          )
+          suppressMessages({
+            # Suppress any startup messages
+          })
+        `);
 
         // load co2 csv for basic usecase tutorial
         try {
@@ -817,6 +946,9 @@ const WebRRunner = ({ code, isDarkMode, webRRef, setCurrentPackage }) => {
 
         await installAndLoadPackages();
         await setupSfPackage();
+        
+        // Re-enable warnings after initialization
+        await webR.evalRVoid(`options(warn = 0)`);
       } catch (err) {
         console.error("WebR init failed:", err);
         setTextOutput(`Error initializing WebR: ${err.message}`);
@@ -879,7 +1011,10 @@ const WebRRunner = ({ code, isDarkMode, webRRef, setCurrentPackage }) => {
 			  case "stdout":
 			  case "stderr":
 				if (output.data) {
-				  setTextOutput((prev) => prev + output.data);
+				  const filtered = filterRStartupMessages(output.data);
+				  if (filtered) {
+				    setTextOutput((prev) => prev + filtered);
+				  }
 				}
 				break;
 			  default:
@@ -891,18 +1026,52 @@ const WebRRunner = ({ code, isDarkMode, webRRef, setCurrentPackage }) => {
 	  await processExportCommands(code);
 	  const cleanedCode = cleanCodeForExecution(code);
 	  const webRForExecution = webRRef?.current || webR;
-	  let result;
 	  let leafletHandled = false;
 	  
 	  try {
-		if (
+		// Check if the code contains functions that need formatted output
+		const needsFormattedOutput = /summary\s*\(|str\s*\(|head\s*\(|tail\s*\(|table\s*\(|print\s*\(/i.test(cleanedCode);
+		
+		if (needsFormattedOutput) {
+		  // Use our enhanced capture method for formatted functions
+		  const formattedOutput = await captureFormattedOutput(webRForExecution, cleanedCode);
+		  if (formattedOutput) {
+			const filtered = filterRStartupMessages(formattedOutput);
+			const cleaned = formatROutput(filtered);
+			if (cleaned && cleaned.trim() !== '') {
+			  setTextOutput((prev) => prev + (prev ? "\n" : "") + cleaned);
+			}
+		  }
+		} else if (
 		  cleanedCode.includes("sf::") ||
 		  cleanedCode.includes('library("sf")') ||
 		  cleanedCode.includes("library(sf)")
 		) {
-		  result = await runCodeWithSfWorkaround(cleanedCode);
+		  const result = await runCodeWithSfWorkaround(cleanedCode);
+		  if (result) {
+			const values = await result.toArray();
+			const stringValues = values.map(val => val ? val.toString() : '');
+			const combinedOutput = stringValues.join('\n');
+			const filtered = filterRStartupMessages(combinedOutput);
+			if (filtered && filtered.trim() !== '' && filtered !== 'NULL') {
+			  setTextOutput(
+				(prev) => prev + (prev ? "\n" : "") + filtered
+			  );
+			}
+		  }
 		} else {
-		  result = await webRForExecution.evalR(cleanedCode);
+		  const result = await webRForExecution.evalR(cleanedCode);
+		  if (result) {
+			const values = await result.toArray();
+			const stringValues = values.map(val => val ? val.toString() : '');
+			const combinedOutput = stringValues.join('\n');
+			const filtered = filterRStartupMessages(combinedOutput);
+			if (filtered && filtered.trim() !== '' && filtered !== 'NULL') {
+			  setTextOutput(
+				(prev) => prev + (prev ? "\n" : "") + filtered
+			  );
+			}
+		  }
 		}
 		
 		if (isLeafletCode && !leafletHandled) {
@@ -910,24 +1079,6 @@ const WebRRunner = ({ code, isDarkMode, webRRef, setCurrentPackage }) => {
 		  setTimeout(() => handleLeafletDisplay(cleanedCode), 1000);
 		}
 		
-		if (result) {
-		  const values = await result.toArray();
-		  const filtered = values.filter(
-			(val) =>
-			  val &&
-			  val.toString().trim() !== "" &&
-			  !val.toString().includes("R is a collaborative project") &&
-			  !val.toString().includes("Type ") &&
-			  !val.toString().includes("Copyright") &&
-			  !val.toString().includes("R version") &&
-			  val.toString() !== "NULL"
-		  );
-		  if (filtered.length > 0) {
-			setTextOutput(
-			  (prev) => prev + (prev ? "\n" : "") + filtered.join("\n")
-			);
-		  }
-		}
 	  } catch (err) {
 		try {
 		  await webRForExecution.evalRVoid(cleanedCode);

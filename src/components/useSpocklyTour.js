@@ -37,8 +37,8 @@ const useSpocklyTour = () => {
     tour.addStep({
       id: 'category',
       title: 'Block Categories',
-      text: 'Choose a category like Statistics, Raster, or Geometry from here.',
-      attachTo: { element: '.blocklyToolboxDiv', on: 'right' },
+      text: 'Choose a category to start your SPOCKLY workflow. Each category contains blocks related to specific tasks such as data loading and -manipulation.',
+      attachTo: { element: '.blocklyToolbox', on: 'right' },
       buttons: [
         { text: 'Back', action: tour.back },
         { text: 'Next', action: tour.next }
@@ -57,6 +57,18 @@ const useSpocklyTour = () => {
       ]
     });
 
+    // Create data button
+    tour.addStep({
+      id: 'create-data',
+      title: 'Create Data',
+      text: 'Click here to create your own datasets.',
+      attachTo: { element: '#createDataButton', on: 'left' },
+      buttons: [
+        { text: 'Back', action: tour.back },
+        { text: 'Next', action: tour.next }
+      ]
+    });
+
     // Beginner/Advanced mode toggle
     tour.addStep({
       id: 'switch-levels',
@@ -69,11 +81,35 @@ const useSpocklyTour = () => {
       ]
     });
 
+    // Co2 usecase tour
+    tour.addStep({
+      id: 'co2-usecase',
+      title: 'CO2 Analysis Use Case Tutorial',
+      text: 'This is a specific use case for analyzing CO2 emissions. Click here to learn more about this example. It will guide you through a predefined workflow.',
+      attachTo: { element: '#showTutorialButton', on: 'left' },
+      buttons: [
+        { text: 'Back', action: tour.back },
+        { text: 'Next', action: tour.next }
+      ]
+    });
+
+    // Help tab view
+    tour.addStep({
+      id: 'helpTab',
+      title: 'Help Tab',
+      text: 'This tab provides help and documentation for every block.',
+      attachTo: { element: '#helpTab', on: 'top' },
+      buttons: [
+        { text: 'Back', action: tour.back },
+        { text: 'Next', action: tour.next }
+      ]
+    });
+
     // R code tab view
     tour.addStep({
       id: 'code-output',
       title: 'R Code View',
-      text: 'This tab shows the R code automatically generated from your blocks.',
+      text: 'This tab shows the R code generated from your blocks after clicking "Generate R Code". You can also download, copy, or reset the code from here.',
       attachTo: { element: '#codeTab', on: 'top' },
       buttons: [
         { text: 'Back', action: tour.back },
@@ -81,7 +117,7 @@ const useSpocklyTour = () => {
       ]
     });
 
-    // Generate code button
+/*     // Generate code button
     tour.addStep({
       id: 'generate-r-code',
       title: 'Generate R Code',
@@ -139,13 +175,13 @@ const useSpocklyTour = () => {
         { text: 'Back', action: tour.back },
         { text: 'Next', action: tour.next }
       ]
-    });
+    }); */
 
     // Output tab view
     tour.addStep({
       id: 'output-tab',
       title: 'Output View',
-      text: 'In this tab, you will see your analysis results such as plots or tables.',
+      text: 'In this tab, you will see the output of your code, for example plots. Click on "Run R Code" to execute the code and see the results.',
       attachTo: { element: '#outputTab', on: 'top' },
       buttons: [
         { text: 'Back', action: tour.back },

@@ -3,13 +3,11 @@ import * as Blockly from "blockly";
 Blockly.defineBlocksWithJsonArray([
 	{
 	  type: "access_column",
-	  message0: "column %1 from %2",
+	  message0: "select column %1 from %2",
 	  args0: [
 		{ type: "field_input", name: "COLUMN", text: "column_name" },
 		{ type: "input_value", name: "DATA", check: ["DataFrame", "Variable"] }
 	  ],
-	  previousStatement: null,
-	  nextStatement: null,
 	  output: "Vector",
 	  colour: "#FF7043",
 	  tooltip: "Access a specific column from a dataset",
@@ -55,7 +53,7 @@ Blockly.defineBlocksWithJsonArray([
 	  inputsInline: true,
 	  previousStatement: null,
 	  nextStatement: null,
-	  colour: "#FF7043",
+	  colour: "#FFD54F",
 	  tooltip: "Rename a specific column in a dataframe by its index",
 	  helpUrl: ""
 	}
@@ -147,7 +145,7 @@ Blockly.Generator.R.forBlock["preview_head_n"] = function (block, generator) {
 Blockly.defineBlocksWithJsonArray([
   {
     type: "data_table",
-    message0: "table of %1",
+    message0: "count frequency of %1",
     args0: [
       {
         type: "input_value",
@@ -165,7 +163,7 @@ Blockly.defineBlocksWithJsonArray([
 
 Blockly.Generator.R.forBlock["data_table"] = function (block, generator) {
   const data = generator.valueToCode(block, "DATA", Blockly.Generator.R.ORDER_ATOMIC);
-  return [`table(${data})`];
+  return [`table(${data})`, 0];
 };
 
 Blockly.Generator.R.forBlock['length_data'] = function(block, generator) {
@@ -176,13 +174,13 @@ Blockly.Generator.R.forBlock['length_data'] = function(block, generator) {
   if (block.outputConnection && !block.outputConnection.isConnected()) {
     return code + '\n';
   }
-  return [code, Blockly.Generator.R.ORDER_FUNCTION_CALL];
+  return [code, 0];
 };
 
 Blockly.defineBlocksWithJsonArray([
   {
     type: "data_shape",
-    message0: "get shape of %1",
+    message0: "get number of rows and columns of %1",
     args0: [
       { type: "input_value", name: "DATA", check: ["DataFrame", "Variable"] }
     ],
@@ -203,13 +201,13 @@ Blockly.defineBlocksWithJsonArray([
     previousStatement: null,
     nextStatement: null,
     output: "DataFrame",
-    colour: "#FF7043",
+    colour: "#FFD54F",
     tooltip: "Filter rows from a dataframe based on a condition",
     helpUrl: "https://dplyr.tidyverse.org/reference/filter.html"
   },
   {
     type: "select_columns",
-    message0: "select columns %1 from %2",
+    message0: "extract columns %1 from %2",
     args0: [
       { type: "field_input", name: "COLUMNS", text: "col1, col2" },
       { type: "input_value", name: "DATA", check: ["DataFrame", "Variable"] }
@@ -217,28 +215,49 @@ Blockly.defineBlocksWithJsonArray([
     previousStatement: null,
     nextStatement: null,
     output: "DataFrame",
-    colour: "#FF7043",
+    colour: "#FFD54F",
     tooltip: "Select specific columns from a dataframe",
     helpUrl: "https://dplyr.tidyverse.org/reference/select.html"
   },
   {
-    type: "group_by_summarise",
-    message0: "group %1 by %2 and calculate %3",
-    args0: [
-      { type: "input_value", name: "DATA", check: ["DataFrame", "Variable"] },
-      { type: "field_input", name: "GROUP_COL", text: "group" },
-      { type: "field_input", name: "SUMMARISE", text: "mean(value)" }
-    ],
-    previousStatement: null,
-    nextStatement: null,
-    output: "DataFrame",
-    colour: "#FF7043",
-    tooltip: "Group by a column and summarise with an expression (e.g. mean(value), sum(count))",
-    helpUrl: "https://dplyr.tidyverse.org/reference/summarise.html"
-  },
+	type: "group_by_summarise",
+	message0: "group %1 by %2 and calculate %3 of %4",
+	args0: [
+	  { type: "input_value", name: "DATA", check: ["DataFrame", "Variable"] },
+	  { type: "field_input", name: "GROUP_COL", text: "group_column" },
+	  { 
+		type: "field_dropdown", 
+		name: "FUNCTION",
+		options: [
+		  ["mean (average)", "mean"],
+		  ["sum (total)", "sum"],
+		  ["count (number of rows)", "n()"],
+		  ["median (middle value)", "median"],
+		  ["min (minimum)", "min"],
+		  ["max (maximum)", "max"],
+		  ["standard deviation", "sd"],
+		  ["variance", "var"],
+		  ["first value", "first"],
+		  ["last value", "last"],
+		  ["count distinct", "n_distinct"],
+		  ["any (logical OR)", "any"],
+		  ["all (logical AND)", "all"]
+		]
+	  },
+	  { type: "field_input", name: "COLUMN", text: "value_column" }
+	],
+	inputsInline: false,
+	previousStatement: null,
+	nextStatement: null,
+	output: "DataFrame",
+	colour: "#FF7043",
+	tooltip: "Group by a column and calculate summary statistics",
+	helpUrl: "https://dplyr.tidyverse.org/reference/summarise.html"
+  }
+  ,
   {
     type: "subset_rows",
-    message0: "subset %1 from row %2 to %3",
+    message0: "subset row %2 to %3 from %1",
     args0: [
       { type: "input_value", name: "DATA", check: ["DataFrame", "Variable"] },
       { type: "field_number", name: "START", value: 1, min: 1 },
@@ -247,7 +266,7 @@ Blockly.defineBlocksWithJsonArray([
     previousStatement: null,
     nextStatement: null,
     output: "DataFrame",
-    colour: "#FF7043",
+    colour: "#FFD54F",
     tooltip: "Subset rows of a dataset from START to END",
     helpUrl: "https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/subset"
   },
@@ -255,7 +274,7 @@ Blockly.defineBlocksWithJsonArray([
     type: "subset_column_range",
     message0: "column %1 of %2 from row %3 to %4",
     args0: [
-      { type: "field_input", name: "COLUMN", text: "Sepal.Length" },
+      { type: "field_input", name: "COLUMN", text: "column_name" },
       { type: "input_value", name: "DATASET", check: ["DataFrame", "Variable"] },
       { type: "field_number", name: "START", value: 40, min: 1 },
       { type: "field_number", name: "END", value: 60, min: 1 }
@@ -263,7 +282,7 @@ Blockly.defineBlocksWithJsonArray([
     previousStatement: null,
     nextStatement: null,
     output: "Vector",
-    colour: "#FF7043",
+    colour: "#FFD54F",
     tooltip: "Access a column range from a dataframe",
     helpUrl: "https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/subset"
   },
@@ -309,22 +328,20 @@ Blockly.Generator.R.forBlock['data_shape'] = function(block, generator) {
   if (block.outputConnection && !block.outputConnection.isConnected()) {
     return code + '\n';
   }
-  return [code, Blockly.Generator.R.ORDER_FUNCTION_CALL];
+  return [code, 0];
 };
 
 Blockly.Generator.R.forBlock['filter_rows'] = function(block, generator) {
-  generator.requirePackage('dplyr');
-
-  const data = generator.valueToCode(block, 'DATA', Blockly.Generator.R.ORDER_ATOMIC) || 'data';
-  const condition = block.getFieldValue('CONDITION') || 'TRUE';
-
-  const code = `${data} %>% filter(${condition})`;
-
-  if (block.outputConnection && !block.outputConnection.isConnected()) {
-    return code + '\n';
-  }
-  return [code, Blockly.Generator.R.ORDER_FUNCTION_CALL];
-};
+	generator.requirePackage('dplyr');
+  
+	const data = generator.valueToCode(block, 'DATA', Blockly.Generator.R.ORDER_ATOMIC) || 'data';
+	const condition = block.getFieldValue('CONDITION') || 'TRUE';
+  
+	const code = `${data} %>% filter(${condition})`;
+  
+	// Verwenden Sie eine sichere Order-Nummer statt einer Konstante
+	return [code, 0]; // 0 entspricht ORDER_ATOMIC
+  };
 
 Blockly.Generator.R.forBlock['select_columns'] = function(block, generator) {
   generator.requirePackage('dplyr');
@@ -354,30 +371,27 @@ Blockly.Generator.R.forBlock['select_columns'] = function(block, generator) {
   if (block.outputConnection && !block.outputConnection.isConnected()) {
     return code + '\n';
   }
-  return [code, Blockly.Generator.R.ORDER_FUNCTION_CALL];
+  return [code, 0];
 };
 
 Blockly.Generator.R.forBlock['group_by_summarise'] = function(block, generator) {
-  generator.requirePackage('dplyr');
-
-  const data = generator.valueToCode(block, 'DATA', Blockly.Generator.R.ORDER_ATOMIC) || 'data';
-  const groupCol = block.getFieldValue('GROUP_COL') || 'group';
-  const summarise = block.getFieldValue('SUMMARISE') || 'n()';
-
-  let summariseExpression;
-  if (summarise.includes('=')) {
-    summariseExpression = summarise;
-  } else {
-    summariseExpression = `result = ${summarise}`;
-  }
-
-  const code = `${data} %>% group_by(${groupCol}) %>% summarise(${summariseExpression})`;
-
-  if (block.outputConnection && !block.outputConnection.isConnected()) {
-    return code + '\n';
-  }
-  return [code, Blockly.Generator.R.ORDER_FUNCTION_CALL];
-};
+	generator.requirePackage('dplyr');
+	const data = generator.valueToCode(block, 'DATA', Blockly.Generator.R.ORDER_ATOMIC) || 'data';
+	const groupCol = block.getFieldValue('GROUP_COL') || 'group_column';
+	const func = block.getFieldValue('FUNCTION') || 'mean';
+	const column = block.getFieldValue('COLUMN') || 'value_column';
+	
+	let summariseExpression;
+	if (func === 'n()') {
+	  summariseExpression = `result = ${func}`;
+	} else {
+	  summariseExpression = `result = ${func}(${column}, na.rm = TRUE)`;
+	}
+	
+	const code = `${data} %>% group_by(${groupCol}) %>% summarise(${summariseExpression})`;
+	
+	return [code, 0];
+  };
 
 Blockly.Generator.R.forBlock['subset_rows'] = function(block, generator) {
   const data = generator.valueToCode(block, 'DATA', Blockly.Generator.R.ORDER_ATOMIC) || 'data';
@@ -389,7 +403,7 @@ Blockly.Generator.R.forBlock['subset_rows'] = function(block, generator) {
   if (block.outputConnection && !block.outputConnection.isConnected()) {
     return code + '\n';
   }
-  return [code, Blockly.Generator.R.ORDER_FUNCTION_CALL];
+  return [code, 0];
 };
 
 Blockly.Generator.R.forBlock['subset_column_range'] = function(block, generator) {
@@ -405,7 +419,7 @@ Blockly.Generator.R.forBlock['subset_column_range'] = function(block, generator)
   if (block.outputConnection && !block.outputConnection.isConnected()) {
     return code + '\n';
   }
-  return [code, Blockly.Generator.R.ORDER_FUNCTION_CALL];
+  return [code, 0];
 };
 
 Blockly.Generator.R.forBlock['mutate_column'] = function(block, generator) {
@@ -465,48 +479,8 @@ Blockly.Generator.R.forBlock["preview_data"] = function (block, generator) {
 
 Blockly.defineBlocksWithJsonArray([
   {
-    type: "print_data",
-    message0: "print dataset %1",
-    args0: [
-      { type: "input_value", name: "DATA", check: ["DataFrame", "Variable"] }
-    ],
-    previousStatement: null,
-    nextStatement: null,
-    colour: "#FF7043",
-    tooltip: "Prints the entire loaded dataset",
-    helpUrl: ""
-  }
-]);
-
-Blockly.Generator.R.forBlock["print_data"] = function (block, generator) {
-  const data = generator.valueToCode(block, "DATA", Blockly.Generator.R.ORDER_ATOMIC) || "data";
-  return `print(${data})\n`;
-};
-
-Blockly.defineBlocksWithJsonArray([
-  {
-    type: "show_structure",
-    message0: "show structure of %1",
-    args0: [
-      { type: "input_value", name: "DATA", check: ["DataFrame", "Variable"] }
-    ],
-    previousStatement: null,
-    nextStatement: null,
-    colour: "#FF7043",
-    tooltip: "Show the structure of the loaded dataset (e.g., columns, types)",
-    helpUrl: ""
-  }
-]);
-
-Blockly.Generator.R.forBlock["show_structure"] = function (block, generator) {
-  const data = generator.valueToCode(block, "DATA", Blockly.Generator.R.ORDER_ATOMIC) || "data";
-  return `cat(capture.output(str(${data})), sep = "\\n")\n`;
-};
-
-Blockly.defineBlocksWithJsonArray([
-  {
     type: "show_tail",
-    message0: "tail %1 rows of %2",
+    message0: "show last %1 rows of %2",
     args0: [
       { type: "field_number", name: "ROWS", value: 5, min: 1, max: 1000 },
       { type: "input_value", name: "DATA", check: ["DataFrame", "Variable"] }

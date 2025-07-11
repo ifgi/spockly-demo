@@ -207,7 +207,7 @@ Blockly.defineBlocksWithJsonArray([
 	if (block.outputConnection && !block.outputConnection.isConnected()) {
 	  return code + '\n';
 	}
-	return [code, Blockly.Generator.R.ORDER_FUNCTION_CALL];
+	return [code, 0];
   };
   
   Blockly.Generator.R.forBlock['append_array'] = function(block, generator) {
@@ -219,7 +219,7 @@ Blockly.defineBlocksWithJsonArray([
 	if (block.outputConnection && !block.outputConnection.isConnected()) {
 	  return code + '\n';
 	}
-	return [code, Blockly.Generator.R.ORDER_FUNCTION_CALL];
+	return [code, 0];
   };
   
   Blockly.Generator.R.forBlock['create_array'] = function(block, generator) {
@@ -231,7 +231,7 @@ Blockly.defineBlocksWithJsonArray([
 	if (block.outputConnection && !block.outputConnection.isConnected()) {
 	  return code + '\n';
 	}
-	return [code, Blockly.Generator.R.ORDER_FUNCTION_CALL];
+	return [code, 0];
   };
   
   Blockly.Generator.R.forBlock['sort_array'] = function(block, generator) {
@@ -243,7 +243,7 @@ Blockly.defineBlocksWithJsonArray([
 	if (block.outputConnection && !block.outputConnection.isConnected()) {
 	  return code + '\n';
 	}
-	return [code, Blockly.Generator.R.ORDER_FUNCTION_CALL];
+	return [code, 0];
   };
   
   Blockly.Generator.R.forBlock['slice_file'] = function(block, generator) {
@@ -255,5 +255,5 @@ Blockly.defineBlocksWithJsonArray([
 	if (block.outputConnection && !block.outputConnection.isConnected()) {
 	  return code + '\n';
 	}
-	return [code, Blockly.Generator.R.ORDER_FUNCTION_CALL];
+	return [code, 0];
   };

@@ -9,77 +9,48 @@ Blockly.defineBlocksWithJsonArray([
     "nextStatement": null,
     "args0": [
       {
-        "type": "field_dropdown",
-        "name": "COLUMN",
-        "options": [["Select column", ""]]
+        "type": "input_value",
+        "name": "DATA",
+        "check": ["DataFrame", "Variable"]
       }
     ],
     "output": null,
     "colour": "#BA68C8",
-    "tooltip": "Calculate standard deviation of a numeric column",
-    "extensions": ["dynamic_column_dropdown"]
+    "tooltip": "Calculate standard deviation of a numeric column or vector",
+	"helpUrl": "https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/sd"
   },
   {
-    "type": "quantile_column",
-    "message0": "quantile of %1 at %2",
-    "previousStatement": null,
-    "nextStatement": null,
-    "args0": [
+    type: "calculate_quantile",
+    message0: "calculate %1 quantile of %2",
+    args0: [
       {
-        "type": "field_dropdown",
-        "name": "COLUMN",
-        "options": [["Select column", ""]]
+        type: "field_dropdown",
+        name: "QUANTILE_TYPE",
+        options: [
+          ["25% (first quartile)", "0.25"],
+          ["50% (median)", "0.5"],
+          ["75% (third quartile)", "0.75"],
+          ["90% (90th percentile)", "0.9"],
+          ["95% (95th percentile)", "0.95"],
+          ["99% (99th percentile)", "0.99"],
+          ["all quartiles (25%, 50%, 75%)", "quartiles"],
+          ["all percentiles (0%, 25%, 50%, 75%, 100%)", "all"],
+          ["custom value", "custom"]
+        ]
       },
       {
-        "type": "field_input",
-        "name": "VALUES",
-        "text": "0.1, 0.5, 0.9"
+        type: "input_value",
+        name: "DATA",
+        check: ["DataFrame", "Variable", "Vector"]
       }
     ],
-    "output": null,
-    "colour": "#BA68C8",
-    "tooltip": "Compute quantiles at given probabilities",
-    "extensions": ["dynamic_column_dropdown"]
+    previousStatement: null,
+    nextStatement: null,
+    output: "Vector",
+    colour: "#BA68C8",
+    tooltip: "Calculate quantiles (percentiles) of numeric data",
+    helpUrl: "https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/quantile"
   },
-  {
-    "type": "sorted_element_at",
-    "message0": "sorted element of %1 at position %2",
-    "previousStatement": null,
-    "nextStatement": null,
-    "args0": [
-      {
-        "type": "field_dropdown",
-        "name": "COLUMN",
-        "options": [["Select column", ""]]
-      },
-      {
-        "type": "field_number",
-        "name": "INDEX",
-        "value": 1,
-        "min": 1
-      }
-    ],
-    "output": null,
-    "colour": "#BA68C8",
-    "tooltip": "Access an element from sorted column",
-    "extensions": ["dynamic_column_dropdown"]
-  },
-  {
-    "type": "summarize_data",
-    "message0": "summarize loaded data (optional column: %1)",
-    "args0": [
-      {
-        "type": "field_input",
-        "name": "COLUMN",
-        "text": " "
-      }
-    ],
-    "previousStatement": null,
-    "nextStatement": null,
-    "colour": "#BA68C8",
-    "tooltip": "Generate a summary of the whole dataset or a specific column if provided"
-  },
-  
   {
     "type": "calculate_mean",
     "message0": "mean of %1",
@@ -87,172 +58,192 @@ Blockly.defineBlocksWithJsonArray([
     "nextStatement": null,
     "args0": [
       {
-        "type": "field_dropdown",
-        "name": "COLUMN",
-        "options": [["Select column", ""]]
+        "type": "input_value",
+        "name": "DATA",
+        "check": ["DataFrame", "Variable"]
       }
     ],
     "output": null,
     "colour": "#BA68C8",
-    "tooltip": "Calculate mean of a numeric column",
-    "extensions": ["dynamic_column_dropdown"]
+    "tooltip": "Calculate mean of a numeric column or vector",
+	"helpUrl": "https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/mean",
   },
   {
     type: "calculate_median",
     message0: "median of %1",
-    args0: [{ type: "input_value", name: "COLUMN" }],
+    args0: [
+		{ 
+			"type": "input_value",
+			"name": "DATA",
+			"check": ["DataFrame", "Variable"]
+		}
+	],
     previousStatement: null,
     nextStatement: null,
-    output: null,
+    output: "Number",
     colour: "#BA68C8",
-    tooltip: "Calculate the median of a column",
+    tooltip: "Calculate the median of a column or vector",
     helpUrl: "https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/median"
   },
   {
     type: "calculate_mse",
-    message0: "mean squared error of %1",
-    args0: [{ type: "input_value", name: "COLUMN" }],
+    message0: "mean squared error between %1 and %2",
+    args0: [
+      {
+        type: "input_value",
+        name: "ACTUAL",
+        check: ["DataFrame", "Variable", "Vector"]
+      },
+      {
+        type: "input_value", 
+        name: "PREDICTED",
+        check: ["DataFrame", "Variable", "Vector"]
+      }
+    ],
     previousStatement: null,
     nextStatement: null,
-    output: null,
+    output: "Number",
     colour: "#BA68C8",
-    tooltip: "Calculate the mean squared error of a column",
+    tooltip: "Calculate mean squared error between actual and predicted values",
     helpUrl: "https://www.rdocumentation.org/packages/mlr3measures/versions/0.5.0/topics/mse"
   },
   {
     type: "calculate_max",
     message0: "maximum of %1",
-    args0: [{ type: "input_value", name: "COLUMN" }],
+	"args0": [
+		{
+		  "type": "input_value",
+		  "name": "DATA",
+		  "check": ["DataFrame", "Variable"]
+		}
+	  ],
     previousStatement: null,
     nextStatement: null,
-    output: null,
+    output: "Number",
     colour: "#BA68C8",
-    tooltip: "Return the maximum value of a column",
+    tooltip: "Return the maximum value of a column or vector",
     helpUrl: "https://www.rdocumentation.org/packages/rapportools/versions/1.2/topics/max"
   },
   {
     type: "calculate_min",
     message0: "minimum of %1",
-    args0: [{ type: "input_value", name: "COLUMN" }],
+	"args0": [
+		{
+		  "type": "input_value",
+		  "name": "DATA",
+		  "check": ["DataFrame", "Variable"]
+		}
+	  ],
     previousStatement: null,
     nextStatement: null,
-    output: null,
+    output: "Number",
     colour: "#BA68C8",
-    tooltip: "Return the minimum value of a column",
+    tooltip: "Return the minimum value of a column or vector",
     helpUrl: "https://www.rdocumentation.org/packages/rapportools/versions/1.2/topics/min"
   },
   {
     type: "calculate_sum",
     message0: "sum of %1",
-    args0: [{ type: "input_value", name: "COLUMN" }],
+	"args0": [
+		{
+		  "type": "input_value",
+		  "name": "DATA",
+		  "check": ["DataFrame", "Variable"]
+		}
+	  ],
     previousStatement: null,
     nextStatement: null,
-    output: null,
+    output: "Number",
     colour: "#BA68C8",
-    tooltip: "Return the sum of values in a column",
+    tooltip: "Return the sum of values in a column or vector",
     helpUrl: "https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/sum"
   }
 ]);
 
-
-
-// --- Dynamic Column Extension ---
-Blockly.Extensions.register('dynamic_column_dropdown', function() {
-  const block = this;
-
-  block.getLoadedDatasetColumns = function() {
-    const blocks = this.workspace.getAllBlocks(false);
-    for (let i = blocks.length - 1; i >= 0; i--) {
-      const block = blocks[i];
-      if (block.type === 'load_builtin_dataset' && block.getFieldValue) {
-        const dataset = block.getFieldValue("DATASET");
-        return datasetColumnsMap[dataset] || [];
-      }
-    }
-    return [];
-  };
-
-  block.updateDropdown = function() {
-    const dropdown = this.getField('COLUMN');
-    if (!dropdown) return;
-    const currentVal = dropdown.getValue();
-    const columns = this.getLoadedDatasetColumns();
-    const newOptions = columns.length > 0 ? columns : [['Select column', '']];
-
-    dropdown.menuGenerator_ = newOptions;
-    if (newOptions.some(opt => opt[1] === currentVal)) {
-      dropdown.setValue(currentVal);
-    }
-  };
-
-  block.updateDropdown();
-  block.workspace.addChangeListener(function(event) {
-    if (
-      event.type === Blockly.Events.BLOCK_CHANGE || 
-      event.type === Blockly.Events.BLOCK_CREATE ||
-      event.type === Blockly.Events.BLOCK_DELETE
-    ) {
-      block.updateDropdown();
-    }
-  });
-});
-
 // --- R Code Generators for statistics blocks ---
 
-Blockly.Generator.R.forBlock['calculate_sd'] = function(block) {
-  const column = block.getFieldValue('COLUMN');
-  const code = column ? `sd(data$${column}, na.rm = TRUE)\n` : '';
-  return code;
+Blockly.Generator.R.forBlock['calculate_sd'] = function(block, generator) {
+	const data = generator.valueToCode(block, "DATA", Blockly.Generator.R.ORDER_ATOMIC) || 'data';
+	const code = `sd(${data}, na.rm = TRUE)`;
+	return code + '\n';
 };
 
-Blockly.Generator.R.forBlock['quantile_column'] = function(block) {
-  const column = block.getFieldValue('COLUMN');
-  const values = block.getFieldValue('VALUES').trim();
-  const probs = values.split(',').map(v => v.trim()).filter(v => v).join(', ');
-  const code = (column && probs) ? `quantile(data$${column}, probs = c(${probs}), na.rm = TRUE)\n` : '';
-  return code;
-};
+Blockly.Generator.R.forBlock['calculate_quantile'] = function(block, generator) {
+	const data = generator.valueToCode(block, 'DATA', Blockly.Generator.R.ORDER_ATOMIC) || 'data';
+	const quantileType = block.getFieldValue('QUANTILE_TYPE') || '0.5';
+	
+	let code;
+	
+	switch(quantileType) {
+	  case 'quartiles':
+		code = `quantile(${data}, probs = c(0.25, 0.5, 0.75), na.rm = TRUE)`;
+		break;
+	  case 'all':
+		code = `quantile(${data}, na.rm = TRUE)`;
+		break;
+	  case 'custom':
+		code = `quantile(${data}, probs = 0.5, na.rm = TRUE)`;
+		break;
+	  default:
+		code = `quantile(${data}, probs = ${quantileType}, na.rm = TRUE)`;
+	}
+	
+	if (block.outputConnection && !block.outputConnection.isConnected()) {
+	  return code + '\n';
+	}
+	return [code, 0];
+  };
 
-Blockly.Generator.R.forBlock['sorted_element_at'] = function(block) {
-  const column = block.getFieldValue('COLUMN');
-  const index = block.getFieldValue('INDEX');
-  const code = (column && index) 
-    ? `sort(data$${column}, na.last = NA)[${index}]\n` 
-    : '';
-  return code;
-};
+Blockly.Generator.R.forBlock["calculate_mean"] = function(block, generator) {
+	const data = generator.valueToCode(block, "DATA", Blockly.Generator.R.ORDER_ATOMIC) || 'data';
+	const code = `mean(${data}, na.rm = TRUE)`;
+	return code + '\n';
+  };
 
-Blockly.Generator.R.forBlock["summarize_data"] = function(block) {
-  const column = block.getFieldValue("COLUMN").trim();
-  
-  if (column && column !== "") {
-    return `summary(data$"${column}")\n`;
-  } else {
-    return `summary(data)\n`;
-  }
-};
-
-Blockly.Generator.R.forBlock["calculate_mean"] = function(block) {
-  const column = block.getFieldValue("COLUMN");
-  return `mean(data[["${column}"]], na.rm = TRUE)\n`;
-};
-
-Blockly.Generator.R.forBlock["calculate_mse"] = function (block, generator) {
-  const col = generator.valueToCode(block, "COLUMN", Blockly.Generator.R.ORDER_NONE);
-  return [`mean(((${col}) - mean(${col}))^2)`, Blockly.Generator.R.ORDER_ATOMIC];
-};
+  Blockly.Generator.R.forBlock['calculate_mse'] = function(block, generator) {
+	const actual = generator.valueToCode(block, 'ACTUAL', Blockly.Generator.R.ORDER_ATOMIC) || 'actual';
+	const predicted = generator.valueToCode(block, 'PREDICTED', Blockly.Generator.R.ORDER_ATOMIC) || 'predicted';
+	
+	const code = `mean((${actual} - ${predicted})^2, na.rm = TRUE)`;
+	
+	if (block.outputConnection && !block.outputConnection.isConnected()) {
+	  return code + '\n';
+	}
+	return [code, 0];
+  };
 
 Blockly.Generator.R.forBlock["calculate_max"] = function (block, generator) {
-  const col = generator.valueToCode(block, "COLUMN", Blockly.Generator.R.ORDER_NONE);
-  return [`max(${col})`, Blockly.Generator.R.ORDER_ATOMIC];
+	const data = generator.valueToCode(block, 'DATA', Blockly.Generator.R.ORDER_ATOMIC) || 'data';
+	const code = `max(${data}, na.rm = TRUE)`;
+	  if (block.outputConnection && !block.outputConnection.isConnected()) {
+		return code + '\n';
+	  }
+	  return [code, 0];
 };
 
 Blockly.Generator.R.forBlock["calculate_min"] = function (block, generator) {
-  const col = generator.valueToCode(block, "COLUMN", Blockly.Generator.R.ORDER_NONE);
-  return [`min(${col})`, Blockly.Generator.R.ORDER_ATOMIC];
+	const data = generator.valueToCode(block, 'DATA', Blockly.Generator.R.ORDER_ATOMIC) || 'data';
+	const code = `min(${data}, na.rm = TRUE)`;
+	  if (block.outputConnection && !block.outputConnection.isConnected()) {
+		return code + '\n';
+	  }
+	  return [code, 0];
 };
 
 Blockly.Generator.R.forBlock["calculate_sum"] = function (block, generator) {
-  const col = generator.valueToCode(block, "COLUMN", Blockly.Generator.R.ORDER_NONE);
-  return [`sum(${col})`, Blockly.Generator.R.ORDER_ATOMIC];
+	const data = generator.valueToCode(block, 'DATA', Blockly.Generator.R.ORDER_ATOMIC) || 'data';
+	const code = `sum(${data}, na.rm = TRUE)`;
+	  if (block.outputConnection && !block.outputConnection.isConnected()) {
+		return code + '\n';
+	  }
+	  return [code, 0];
 };
+  
+Blockly.Generator.R.forBlock['calculate_median'] = function(block, generator) {
+  const data = generator.valueToCode(block, 'DATA', Blockly.Generator.R.ORDER_ATOMIC) || 'data';
+  const code = `median(${data}, na.rm = TRUE)`;
+	if (block.outputConnection && !block.outputConnection.isConnected()) {
+	  return code + '\n';
+	}
+	return [code, 0];
+  };

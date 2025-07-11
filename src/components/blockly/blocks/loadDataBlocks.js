@@ -15,8 +15,7 @@ Blockly.defineBlocksWithJsonArray([
 		  text: "data.geojson",
 		},
 	  ],
-	  previousStatement: null,
-	  nextStatement: null,
+
 	  output: null,
 	  colour: "#FFA726",
 	  tooltip: "Load a GeoJSON file",
@@ -37,25 +36,10 @@ Blockly.defineBlocksWithJsonArray([
     type: "load_csv",
     message0: "load CSV file %1",
     args0: [{ type: "field_input", name: "FILENAME", text: "data.csv" }],
-    previousStatement: null,
-    nextStatement: null,
     output: "DataFrame",
     colour: "#FFA726",
     tooltip: "Load a CSV file from WebR filesystem",
     helpUrl: "https://www.rdocumentation.org/packages/utils/versions/3.6.2/topics/read.table"
-  },
-
-  // Load GeoJSON
-  {
-    type: "load_geojson",
-    message0: "load GeoJSON file %1",
-    args0: [{ type: "field_input", name: "FILENAME", text: "data.geojson" }],
-    previousStatement: null,
-    nextStatement: null,
-    output: null,
-    colour: "#FFA726",
-    tooltip: "Load a GeoJSON file using sf::st_read()",
-    helpUrl: "https://www.rdocumentation.org/packages/sf/versions/1.0-14/topics/st_read"
   },
 
   // Load Shapefile
@@ -63,8 +47,6 @@ Blockly.defineBlocksWithJsonArray([
     type: "load_shapefile",
     message0: "load shapefile %1",
     args0: [{ type: "field_input", name: "FILENAME", text: "map.shp" }],
-    previousStatement: null,
-    nextStatement: null,
     output: null,
     colour: "#FFA726",
     tooltip: "Load a shapefile (.shp) from WebR filesystem using sf::st_read()",
@@ -76,8 +58,6 @@ Blockly.defineBlocksWithJsonArray([
     type: "load_raster",
     message0: "load raster file %1",
     args0: [{ type: "field_input", name: "FILENAME", text: "raster.tif" }],
-    previousStatement: null,
-    nextStatement: null,
     output: null,
     colour: "#FFA726",
     tooltip: "Load a raster file using stars",
@@ -89,8 +69,6 @@ Blockly.defineBlocksWithJsonArray([
     type: "load_txt",
     message0: "load text file %1",
     args0: [{ type: "field_input", name: "FILENAME", text: "data.txt" }],
-    previousStatement: null,
-    nextStatement: null,
     output: null,
     colour: "#FFA726",
     tooltip: "Load a text file using read.table()",
@@ -102,8 +80,6 @@ Blockly.defineBlocksWithJsonArray([
     type: "load_json",
     message0: "load JSON file %1",
     args0: [{ type: "field_input", name: "FILENAME", text: "data.json" }],
-    previousStatement: null,
-    nextStatement: null,
     output: null,
     colour: "#FFA726",
     tooltip: "Load a JSON file using jsonlite",
@@ -115,8 +91,6 @@ Blockly.defineBlocksWithJsonArray([
     type: "load_csv_url",
     message0: "load CSV from URL %1",
     args0: [{ type: "field_input", name: "URL", text: "https://example.com/data.csv" }],
-    previousStatement: null,
-    nextStatement: null,
     output: "DataFrame",
     colour: "#FFA726",
     tooltip: "Load a CSV file from a URL",
@@ -128,8 +102,6 @@ Blockly.defineBlocksWithJsonArray([
     type: "load_api_data",
     message0: "load data from API %1",
     args0: [{ type: "field_input", name: "API_URL", text: "https://api.example.com/data" }],
-    previousStatement: null,
-    nextStatement: null,
     output: "DataFrame",
     colour: "#FFA726",
     tooltip: "Load data from a REST API endpoint",
@@ -147,6 +119,7 @@ Blockly.defineBlocksWithJsonArray([
         "options": [["iris", "iris"], ["mtcars", "mtcars"], ["airquality", "airquality"], ["meuse", "meuse"]]
       }
     ],
+
     "output": "Dataset",
     "colour": "#FFA726",
     "tooltip": "Load a built-in dataset like iris",
@@ -393,8 +366,7 @@ Blockly.defineBlocksWithJsonArray([
 		  text: "data.geojson",
 		},
 	  ],
-	  previousStatement: null,
-	  nextStatement: null,
+
 	  output: null,
 	  colour: "#FFA726",
 	  tooltip: "Load a GeoJSON file",
@@ -418,8 +390,7 @@ Blockly.defineBlocksWithJsonArray([
 		  text: "data.tif",
 		},
 	  ],
-	  previousStatement: null,
-	  nextStatement: null,
+
 	  output: null,
 	  colour: "#FFA726",
 	  tooltip: "Load a tif file",

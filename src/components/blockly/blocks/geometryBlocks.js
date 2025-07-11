@@ -13,6 +13,20 @@ Blockly.defineBlocksWithJsonArray([
     helpUrl: "https://www.rdocumentation.org/packages/sf/versions/1.0-14/topics/geos_unary"
   },
   {
+	type: "set_coordinates_sp",
+	message0: "set spatial coordinates of %1 to %2 and %3",
+	args0: [
+	  { type: "input_value", name: "DATA", check: ["DataFrame", "Variable"] },
+	  { type: "field_input", name: "X_COL", text: "x_column" },
+	  { type: "field_input", name: "Y_COL", text: "y_column" }
+	],
+	previousStatement: null,
+	nextStatement: null,
+	colour: "#4DD0E1",
+	tooltip: "Convert DataFrame to sp object by setting coordinates",
+	helpUrl: ""
+  },
+  {
     type: "st_transform",
     message0: "transform %1 to CRS %2",
     args0: [
@@ -165,5 +179,33 @@ Blockly.defineBlocksWithJsonArray([
     colour: "#4DD0E1",
     tooltip: "Get geometry type using st_geometry_type()",
     helpUrl: "https://www.rdocumentation.org/packages/sf/versions/1.0-8/topics/st_geometry_type"
+  },
+  {
+	type: "set_crs",
+	message0: "set CRS of %1 to %2",
+	args0: [
+	  { type: "input_value", name: "DATA", check: ["Variable"] },
+	  { type: "field_input", name: "CRS", text: "+proj=longlat +datum=WGS84" }
+	],
+	previousStatement: null,
+	nextStatement: null,
+	colour: "#FFD54F",
+	tooltip: "Set coordinate reference system",
+	helpUrl: ""
   }
 ]);
+  
+Blockly.Generator.R.forBlock['set_coordinates_sp'] = function(block, generator) {
+	generator.requirePackage('sp');
+	const data = generator.valueToCode(block, 'DATA', Blockly.Generator.R.ORDER_ATOMIC) || 'data';
+	const xCol = block.getFieldValue('X_COL') || 'x';
+	const yCol = block.getFieldValue('Y_COL') || 'y';
+	
+	return `coordinates(${data}) <- ~${xCol} + ${yCol}\n`;
+  };
+
+  Blockly.Generator.R.forBlock['set_crs'] = function(block, generator) {
+	const data = generator.valueToCode(block, 'DATA', Blockly.Generator.R.ORDER_ATOMIC) || 'data';
+	const crs = block.getFieldValue('CRS');
+	return `proj4string(${data}) <- CRS("${crs}")\n`;
+  };

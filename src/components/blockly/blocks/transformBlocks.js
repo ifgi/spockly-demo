@@ -257,3 +257,125 @@ Blockly.defineBlocksWithJsonArray([
 	}
 	return [code, 0];
   };
+
+
+
+  Blockly.defineBlocksWithJsonArray([
+	{
+	  type: "unique_values",
+	  message0: "get unique values from %1 %2",
+	  args0: [
+		{
+		  type: "input_value",
+		  name: "DATA",
+		  check: ["Vector", "Array", "Variable", "Matrix"]
+		},
+		{
+		  type: "input_dummy"
+		}
+	  ],
+	  output: "Vector",
+	  colour: "#FFD54F",
+	  tooltip: "Get unique values from a vector, array or matrix subset",
+	  helpUrl: "https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/unique",
+	  mutator: "unique_subset_mutator"
+	}
+  ]);
+  
+  Blockly.Extensions.registerMutator('unique_subset_mutator', {
+	mutationToDom: function() {
+	  const container = Blockly.utils.xml.createElement('mutation');
+	  container.setAttribute('subset', this.subset_ || 'none');
+	  return container;
+	},
+	
+	domToMutation: function(xmlElement) {
+	  this.subset_ = xmlElement.getAttribute('subset') || 'none';
+	  this.updateShape_();
+	},
+	
+	updateShape_: function() {
+	  if (this.getInput('SUBSET')) {
+		this.removeInput('SUBSET');
+	  }
+	  
+	  if (this.subset_ !== 'none') {
+		this.appendDummyInput('SUBSET')
+			.appendField('extract')
+			.appendField(new Blockly.FieldDropdown([
+			  ['column', 'column'],
+			  ['row', 'row'],
+			  ['all rows of column', 'all_rows_col'],
+			  ['all columns of row', 'all_cols_row']
+			], this.handleSubsetChange_.bind(this)), 'SUBSET_TYPE');
+			
+		const subsetType = this.getFieldValue('SUBSET_TYPE') || 'column';
+		
+		switch(subsetType) {
+		  case 'column':
+			this.getInput('SUBSET')
+				.appendField('number')
+				.appendField(new Blockly.FieldNumber(1, 1), 'COL_NUM');
+			break;
+		  case 'row':
+			this.getInput('SUBSET')
+				.appendField('number')
+				.appendField(new Blockly.FieldNumber(1, 1), 'ROW_NUM');
+			break;
+		  case 'all_rows_col':
+			this.getInput('SUBSET')
+				.appendField('number')
+				.appendField(new Blockly.FieldNumber(1, 1), 'COL_NUM');
+			break;
+		  case 'all_cols_row':
+			this.getInput('SUBSET')
+				.appendField('number')
+				.appendField(new Blockly.FieldNumber(1, 1), 'ROW_NUM');
+			break;
+		}
+	  }
+	},
+	
+	handleSubsetChange_: function() {
+	  this.updateShape_();
+	}
+  });
+  
+
+  
+  // Generator
+  Blockly.Generator.R.forBlock['unique_values'] = function(block, generator) {
+	const data = generator.valueToCode(block, 'DATA', Blockly.Generator.R.ORDER_ATOMIC) || 'c()';
+	
+	let code = data;
+	
+	if (block.subset_ === 'active') {
+	  const subsetType = block.getFieldValue('SUBSET_TYPE');
+	  
+	  switch(subsetType) {
+		case 'column':
+		  const colNum = block.getFieldValue('COL_NUM');
+		  code = `${data}[${colNum}]`;
+		  break;
+		case 'row':
+		  const rowNum = block.getFieldValue('ROW_NUM');
+		  code = `${data}[${rowNum},]`;
+		  break;
+		case 'all_rows_col':
+		  const colNumAll = block.getFieldValue('COL_NUM');
+		  code = `${data}[,${colNumAll}]`;
+		  break;
+		case 'all_cols_row':
+		  const rowNumAll = block.getFieldValue('ROW_NUM');
+		  code = `${data}[${rowNumAll},]`;
+		  break;
+	  }
+	}
+	
+	code = `unique(${code})`;
+	
+	if (block.outputConnection && !block.outputConnection.isConnected()) {
+	  return code + '\n';
+	}
+	return [code, Blockly.Generator.R.ORDER_ATOMIC];
+  };

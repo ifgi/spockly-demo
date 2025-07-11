@@ -1,8 +1,6 @@
 import * as Blockly from "blockly";
 import { FieldColour } from '@blockly/field-colour';
-
 Blockly.fieldRegistry.register('field_colour', FieldColour);
-
 Blockly.defineBlocksWithJsonArray([
     // BEGINNER BLOCKS
     {
@@ -44,7 +42,6 @@ Blockly.defineBlocksWithJsonArray([
         "helpUrl": "",
         "extensions": ["chart_type_mutator_beginner"]
     },
-
     {
         "type": "create_xy_chart_beginner",
         "message0": "Create %1 %2 x data %3 %4 y data %5 %6 color %7",
@@ -88,7 +85,6 @@ Blockly.defineBlocksWithJsonArray([
         "tooltip": "Create a chart with X and Y data",
         "helpUrl": ""
     },
-
     {
         "type": "add_to_chart_beginner",
         "message0": "Add %1 to existing chart %2 data %3",
@@ -117,7 +113,6 @@ Blockly.defineBlocksWithJsonArray([
         "helpUrl": "",
         "extensions": ["add_type_mutator_beginner"]
     },
-
     {
         "type": "chart_layout_beginner",
         "message0": "Show %1 charts in grid",
@@ -140,7 +135,6 @@ Blockly.defineBlocksWithJsonArray([
         "tooltip": "Arrange multiple charts in a grid",
         "helpUrl": ""
     },
-
     // ADVANCED BLOCKS
     {
         "type": "plot_advanced",
@@ -157,7 +151,8 @@ Blockly.defineBlocksWithJsonArray([
                     ["Box Plot", "boxplot"],
                     ["Pie Chart", "pie"],
                     ["Density Plot", "density"],
-                    ["Heatmap", "heatmap"]
+                    ["Heatmap", "heatmap"],
+                    ["Spatial Heatmap", "spatial_heatmap"]
                 ]
             },
             {
@@ -176,7 +171,6 @@ Blockly.defineBlocksWithJsonArray([
         "helpUrl": "",
         "extensions": ["plot_type_mutator_advanced"]
     },
-
     {
         "type": "plot_data_setting",
         "message0": "data %1",
@@ -192,7 +186,6 @@ Blockly.defineBlocksWithJsonArray([
         "colour": "#546E7A",
         "tooltip": "Set data for plot"
     },
-
     {
         "type": "plot_xy_setting",
         "message0": "x %1 y %2",
@@ -213,7 +206,6 @@ Blockly.defineBlocksWithJsonArray([
         "colour": "#546E7A",
         "tooltip": "Set X and Y data"
     },
-
     {
         "type": "plot_appearance_setting",
         "message0": "appearance %1 %2",
@@ -232,7 +224,6 @@ Blockly.defineBlocksWithJsonArray([
         "colour": "#546E7A",
         "tooltip": "Set appearance options"
     },
-
     {
         "type": "color_option",
         "message0": "color %1",
@@ -248,7 +239,6 @@ Blockly.defineBlocksWithJsonArray([
         "colour": "#455A64",
         "tooltip": "Set color"
     },
-
     {
         "type": "symbol_option",
         "message0": "symbol %1",
@@ -271,7 +261,6 @@ Blockly.defineBlocksWithJsonArray([
         "colour": "#455A64",
         "tooltip": "Set point symbol"
     },
-
     {
         "type": "line_type_option",
         "message0": "line type %1",
@@ -292,7 +281,6 @@ Blockly.defineBlocksWithJsonArray([
         "colour": "#455A64",
         "tooltip": "Set line type"
     },
-
     {
         "type": "size_option",
         "message0": "size %1",
@@ -311,7 +299,6 @@ Blockly.defineBlocksWithJsonArray([
         "colour": "#455A64",
         "tooltip": "Set size"
     },
-
     {
         "type": "plot_labels_setting",
         "message0": "labels %1 %2",
@@ -330,7 +317,6 @@ Blockly.defineBlocksWithJsonArray([
         "colour": "#546E7A",
         "tooltip": "Set plot labels"
     },
-
     {
         "type": "title_label",
         "message0": "title %1",
@@ -346,7 +332,6 @@ Blockly.defineBlocksWithJsonArray([
         "colour": "#455A64",
         "tooltip": "Set plot title"
     },
-
     {
         "type": "axis_label",
         "message0": "%1 axis label %2",
@@ -370,7 +355,6 @@ Blockly.defineBlocksWithJsonArray([
         "colour": "#455A64",
         "tooltip": "Set axis label"
     },
-
     {
         "type": "plot_limits_setting",
         "message0": "axis limits %1 %2",
@@ -389,7 +373,6 @@ Blockly.defineBlocksWithJsonArray([
         "colour": "#546E7A",
         "tooltip": "Set axis limits"
     },
-
     {
         "type": "axis_limit",
         "message0": "%1 axis from %2 to %3",
@@ -418,7 +401,6 @@ Blockly.defineBlocksWithJsonArray([
         "colour": "#455A64",
         "tooltip": "Set axis limits"
     },
-
     {
         "type": "plot_legend_setting",
         "message0": "legend %1 position %2",
@@ -445,7 +427,6 @@ Blockly.defineBlocksWithJsonArray([
         "colour": "#546E7A",
         "tooltip": "Configure legend"
     },
-
     {
         "type": "add_layer_advanced",
         "message0": "Add layer %1 %2 settings %3",
@@ -476,7 +457,6 @@ Blockly.defineBlocksWithJsonArray([
         "tooltip": "Add a layer to existing plot",
         "helpUrl": ""
     },
-
     {
         "type": "layout_advanced",
         "message0": "Layout %1 rows %2 columns %3 %4 margins %5",
@@ -514,10 +494,67 @@ Blockly.defineBlocksWithJsonArray([
         "colour": "#607D8B",
         "tooltip": "Set advanced layout for multiple plots",
         "helpUrl": ""
+    },
+    {
+        "type": "plot_spatial_data_setting",
+        "message0": "spatial data %1",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "SPATIAL_DATA",
+                "check": ["KrigingModel", "IDWModel", "Variable"]
+            }
+        ],
+        "previousStatement": "PlotSetting",
+        "nextStatement": "PlotSetting",
+        "colour": "#546E7A",
+        "tooltip": "Set spatial interpolation data (Kriging or IDW result)"
+    },
+    {
+        "type": "color_palette_option",
+        "message0": "color palette %1",
+        "args0": [
+            {
+                "type": "field_dropdown",
+                "name": "PALETTE",
+                "options": [
+                    ["blue-white-red (temperature)", "temp"],
+                    ["terrain colors", "terrain"],
+                    ["heat colors", "heat"],
+                    ["rainbow", "rainbow"],
+                    ["grayscale", "gray"],
+                    ["blue gradient", "blues"],
+                    ["green gradient", "greens"]
+                ]
+            }
+        ],
+        "previousStatement": "AppearanceOption",
+        "nextStatement": "AppearanceOption",
+        "colour": "#455A64",
+        "tooltip": "Set color palette for heatmap"
+    },
+    {
+        "type": "show_points_option",
+        "message0": "show original points %1 with data %2",
+        "args0": [
+            {
+                "type": "field_checkbox",
+                "name": "SHOW",
+                "checked": true
+            },
+            {
+                "type": "input_value",
+                "name": "POINT_DATA",
+                "check": ["DataFrame", "Variable"]
+            }
+        ],
+        "previousStatement": "AppearanceOption",
+        "nextStatement": "AppearanceOption",
+        "colour": "#455A64",
+        "tooltip": "Show original measurement points on the heatmap"
     }
 ]);
 
-// Mutators for dynamic block updates
 Blockly.Extensions.register('chart_type_mutator_beginner', function() {
     this.getInput('DATA').setCheck(['Variable', 'Data', 'Array']);
 });
@@ -546,9 +583,9 @@ Blockly.Generator.R.forBlock['create_chart_beginner'] = function(block, generato
     const chartType = block.getFieldValue('CHART_TYPE');
     const data = generator.valueToCode(block, 'DATA', Blockly.Generator.R.ORDER_ATOMIC) || 'NULL';
     const color = block.getFieldValue('COLOR');
-    
+
     let code = '';
-    
+
     switch(chartType) {
         case 'scatter':
             code = `plot(${data}, col = "${color}", pch = 19)\n`;
@@ -566,7 +603,7 @@ Blockly.Generator.R.forBlock['create_chart_beginner'] = function(block, generato
             code = `plot(${data}, type = "l", col = "${color}")\n`;
             break;
     }
-    
+
     return code;
 };
 
@@ -575,9 +612,9 @@ Blockly.Generator.R.forBlock['create_xy_chart_beginner'] = function(block, gener
     const xData = generator.valueToCode(block, 'X_DATA', Blockly.Generator.R.ORDER_ATOMIC) || 'NULL';
     const yData = generator.valueToCode(block, 'Y_DATA', Blockly.Generator.R.ORDER_ATOMIC) || 'NULL';
     const color = block.getFieldValue('COLOR');
-    
+
     let code = '';
-    
+
     switch(chartType) {
         case 'scatter':
             code = `plot(${xData}, ${yData}, col = "${color}", pch = 19)\n`;
@@ -586,16 +623,16 @@ Blockly.Generator.R.forBlock['create_xy_chart_beginner'] = function(block, gener
             code = `plot(${xData}, ${yData}, type = "l", col = "${color}")\n`;
             break;
     }
-    
+
     return code;
 };
 
 Blockly.Generator.R.forBlock['add_to_chart_beginner'] = function(block, generator) {
     const addType = block.getFieldValue('ADD_TYPE');
     const data = generator.valueToCode(block, 'DATA', Blockly.Generator.R.ORDER_ATOMIC) || 'NULL';
-    
+
     let code = '';
-    
+
     switch(addType) {
         case 'points':
             code = `points(${data}, pch = 19)\n`;
@@ -604,7 +641,7 @@ Blockly.Generator.R.forBlock['add_to_chart_beginner'] = function(block, generato
             code = `lines(${data})\n`;
             break;
     }
-    
+
     return code;
 };
 
@@ -617,7 +654,7 @@ Blockly.Generator.R.forBlock['chart_layout_beginner'] = function(block, generato
 // GENERATORS - ADVANCED
 Blockly.Generator.R.forBlock['plot_advanced'] = function(block, generator) {
     const plotType = block.getFieldValue('PLOT_TYPE');
-    
+
     let data = null;
     let xData = null;
     let yData = null;
@@ -632,11 +669,15 @@ Blockly.Generator.R.forBlock['plot_advanced'] = function(block, generator) {
     let cex = '1';
     let showLegend = false;
     let legendPos = 'topright';
-    
+    let spatialData = null;
+    let palette = 'temp';
+    let showPoints = false;
+    let pointData = null;
+
     let settingBlock = block.getInputTargetBlock('SETTINGS');
     while (settingBlock) {
         const settingType = settingBlock.type;
-        
+
         switch(settingType) {
             case 'plot_data_setting':
                 data = generator.valueToCode(settingBlock, 'DATA', Blockly.Generator.R.ORDER_ATOMIC);
@@ -660,6 +701,13 @@ Blockly.Generator.R.forBlock['plot_advanced'] = function(block, generator) {
                             break;
                         case 'size_option':
                             cex = optionBlock.getFieldValue('SIZE');
+                            break;
+                        case 'color_palette_option':
+                            palette = optionBlock.getFieldValue('PALETTE');
+                            break;
+                        case 'show_points_option':
+                            showPoints = optionBlock.getFieldValue('SHOW');
+                            pointData = generator.valueToCode(optionBlock, 'POINT_DATA', Blockly.Generator.R.ORDER_ATOMIC);
                             break;
                     }
                     optionBlock = optionBlock.getNextBlock();
@@ -699,13 +747,75 @@ Blockly.Generator.R.forBlock['plot_advanced'] = function(block, generator) {
                 showLegend = settingBlock.getFieldValue('SHOW');
                 legendPos = settingBlock.getFieldValue('POSITION');
                 break;
+            case 'plot_spatial_data_setting':
+                spatialData = generator.valueToCode(settingBlock, 'SPATIAL_DATA', Blockly.Generator.R.ORDER_ATOMIC);
+                break;
         }
         settingBlock = settingBlock.getNextBlock();
     }
-    
+
     let code = '';
     let args = [];
-    
+
+    if (plotType === 'spatial_heatmap') {
+        if (!spatialData) return 'print("Error: No spatial data provided")\n';
+
+        let colorCode;
+        switch(palette) {
+            case 'temp':
+                colorCode = 'colorRampPalette(c("blue", "white", "red"))';
+                break;
+            case 'terrain':
+                colorCode = 'terrain.colors';
+                break;
+            case 'heat':
+                colorCode = 'heat.colors';
+                break;
+            case 'rainbow':
+                colorCode = 'rainbow';
+                break;
+            case 'gray':
+                colorCode = 'gray.colors';
+                break;
+            case 'blues':
+                colorCode = 'colorRampPalette(c("white", "lightblue", "darkblue"))';
+                break;
+            case 'greens':
+                colorCode = 'colorRampPalette(c("white", "lightgreen", "darkgreen"))';
+                break;
+        }
+
+        let code = `
+{
+  kriging_data <- ${spatialData}
+  x_coords <- unique(coordinates(kriging_data)[,1])
+  y_coords <- unique(coordinates(kriging_data)[,2])
+  grid_dims <- kriging_data@grid@cells.dim
+  z_matrix <- matrix(kriging_data$var1.pred, nrow = grid_dims[1], ncol = grid_dims[2])
+
+  filled.contour(x_coords, y_coords, z_matrix,
+                 color.palette = ${colorCode},`;
+
+        if (title) code += `\n                 main = ${title},`;
+        if (xlab) code += `\n                 xlab = ${xlab},`;
+        if (ylab) code += `\n                 ylab = ${ylab},`;
+
+        code += `
+                 plot.axes = {
+                   axis(1)
+                   axis(2)`;
+
+        if (showPoints && pointData) {
+            code += `\n                   points(${pointData}$lng, ${pointData}$lat, pch = 21, bg = "black", cex = 1.2)`;
+        }
+
+        code += `
+                 })
+}\n`;
+
+        return code;
+    }
+
     switch(plotType) {
         case 'scatter':
             if (xData && yData) {
@@ -750,29 +860,29 @@ Blockly.Generator.R.forBlock['plot_advanced'] = function(block, generator) {
             code = `heatmap(as.matrix(${data})`;
             break;
     }
-    
+
     if (plotType === 'scatter' || plotType === 'line') {
         code = `plot(${args.join(', ')}`;
     }
-    
+
     if (title) code += `, main = ${title}`;
     if (xlab) code += `, xlab = ${xlab}`;
     if (ylab) code += `, ylab = ${ylab}`;
     if (xlim) code += `, xlim = ${xlim}`;
     if (ylim) code += `, ylim = ${ylim}`;
-    
+
     code += ')\n';
-    
+
     if (showLegend && (plotType === 'scatter' || plotType === 'line')) {
         code += `legend("${legendPos}", legend = c("Data"), col = ${color}, pch = ${pch})\n`;
     }
-    
+
     return code;
 };
 
 Blockly.Generator.R.forBlock['add_layer_advanced'] = function(block, generator) {
     const layerType = block.getFieldValue('LAYER_TYPE');
-    
+
     let data = null;
     let xData = null;
     let yData = null;
@@ -780,11 +890,11 @@ Blockly.Generator.R.forBlock['add_layer_advanced'] = function(block, generator) 
     let pch = '1';
     let lty = '1';
     let cex = '1';
-    
+
     let settingBlock = block.getInputTargetBlock('SETTINGS');
     while (settingBlock) {
         const settingType = settingBlock.type;
-        
+
         switch(settingType) {
             case 'plot_data_setting':
                 data = generator.valueToCode(settingBlock, 'DATA', Blockly.Generator.R.ORDER_ATOMIC);
@@ -816,9 +926,9 @@ Blockly.Generator.R.forBlock['add_layer_advanced'] = function(block, generator) 
         }
         settingBlock = settingBlock.getNextBlock();
     }
-    
+
     let code = '';
-    
+
     switch(layerType) {
         case 'points':
             if (xData && yData) {
@@ -848,7 +958,7 @@ Blockly.Generator.R.forBlock['add_layer_advanced'] = function(block, generator) 
             }
             break;
     }
-    
+
     return code;
 };
 
@@ -856,15 +966,15 @@ Blockly.Generator.R.forBlock['layout_advanced'] = function(block, generator) {
     const rows = block.getFieldValue('ROWS');
     const cols = block.getFieldValue('COLS');
     const adjustMargins = block.getFieldValue('ADJUST_MARGINS');
-    
+
     let code = `par(mfrow = c(${rows}, ${cols})`;
-    
+
     if (adjustMargins) {
         code += ', mar = c(4, 4, 2, 1)';
     }
-    
+
     code += ')\n';
-    
+
     return code;
 };
 
@@ -918,5 +1028,17 @@ Blockly.Generator.R.forBlock['axis_limit'] = function(block, generator) {
 };
 
 Blockly.Generator.R.forBlock['plot_legend_setting'] = function(block, generator) {
+    return null;
+};
+
+Blockly.Generator.R.forBlock['plot_spatial_data_setting'] = function(block, generator) {
+    return null;
+};
+
+Blockly.Generator.R.forBlock['color_palette_option'] = function(block, generator) {
+    return null;
+};
+
+Blockly.Generator.R.forBlock['show_points_option'] = function(block, generator) {
     return null;
 };

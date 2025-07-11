@@ -225,8 +225,8 @@ Blockly.defineBlocksWithJsonArray([
 	args0: [
 	  { type: "input_value", name: "DATA", check: ["DataFrame", "Variable"] },
 	  { type: "field_input", name: "GROUP_COL", text: "group_column" },
-	  { 
-		type: "field_dropdown", 
+	  {
+		type: "field_dropdown",
 		name: "FUNCTION",
 		options: [
 		  ["mean (average)", "mean"],
@@ -253,8 +253,7 @@ Blockly.defineBlocksWithJsonArray([
 	colour: "#FF7043",
 	tooltip: "Group by a column and calculate summary statistics",
 	helpUrl: "https://dplyr.tidyverse.org/reference/summarise.html"
-  }
-  ,
+  },
   {
     type: "subset_rows",
     message0: "subset row %2 to %3 from %1",
@@ -381,16 +380,24 @@ Blockly.Generator.R.forBlock['group_by_summarise'] = function(block, generator) 
 	const func = block.getFieldValue('FUNCTION') || 'mean';
 	const column = block.getFieldValue('COLUMN') || 'value_column';
 	
+	const groupCols = groupCol.includes(',') 
+	  ? groupCol.split(',').map(col => col.trim()).join(', ')
+	  : groupCol;
+	
 	let summariseExpression;
 	if (func === 'n()') {
-	  summariseExpression = `result = ${func}`;
+	  summariseExpression = `n = ${func}`;
 	} else {
-	  summariseExpression = `result = ${func}(${column}, na.rm = TRUE)`;
+	  const outputName = column.trim();
+	  summariseExpression = `${outputName} = ${func}(${column}, na.rm = TRUE)`;
 	}
 	
-	const code = `${data} %>% group_by(${groupCol}) %>% summarise(${summariseExpression})`;
+	const code = `${data} %>% group_by(${groupCols}) %>% summarise(${summariseExpression}, .groups = 'drop')`;
 	
-	return [code, 0];
+	if (block.outputConnection && !block.outputConnection.isConnected()) {
+	  return code + '\n';
+	}
+	return [code, Blockly.Generator.R.ORDER_ATOMIC];
   };
 
 Blockly.Generator.R.forBlock['subset_rows'] = function(block, generator) {
@@ -520,3 +527,112 @@ Blockly.Generator.R.forBlock["show_rows"] = function (block, generator) {
   const data = generator.valueToCode(block, "DATA", Blockly.Generator.R.ORDER_ATOMIC) || "data";
   return `head(${data}, ${rows})\n`;
 };
+
+
+Blockly.defineBlocksWithJsonArray([
+	{
+	  type: "access_s4_slot",
+	  message0: "access S4 slot %1 from %2",
+	  args0: [
+		{ 
+		  type: "field_input", 
+		  name: "SLOT", 
+		  text: "slot_name" 
+		},
+		{ 
+		  type: "input_value", 
+		  name: "OBJECT", 
+		  check: ["Variable", "Object"] 
+		}
+	  ],
+	  output: null, 
+	  colour: "#FF7043",
+	  tooltip: "Access a slot from an S4 object using @ operator",
+	  helpUrl: "https://www.rdocumentation.org/packages/methods/topics/slot"
+	},
+	{
+	  type: "access_list_element",
+	  message0: "access element [%1] from %2",
+	  args0: [
+		{ 
+		  type: "input_value", 
+		  name: "INDEX", 
+		  check: ["Number", "String"] 
+		},
+		{ 
+		  type: "input_value", 
+		  name: "LIST", 
+		  check: ["Variable", "List", "Vector"] 
+		}
+	  ],
+	  output: null,
+	  colour: "#FF7043",
+	  tooltip: "Access an element from a list or vector using [[]] operator",
+	  helpUrl: "https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/Extract"
+	},
+	{
+	  type: "access_matrix_element",
+	  message0: "access row %1 column %2 from %3",
+	  args0: [
+		{ 
+		  type: "input_value", 
+		  name: "ROW", 
+		  check: "Number" 
+		},
+		{ 
+		  type: "input_value", 
+		  name: "COL", 
+		  check: "Number" 
+		},
+		{ 
+		  type: "input_value", 
+		  name: "MATRIX", 
+		  check: ["Matrix", "Variable"] 
+		}
+	  ],
+	  output: "S4Slot",
+	  colour: "#FF7043",
+	  tooltip: "Access a specific element from a matrix using [row, col]",
+	  helpUrl: "https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/Extract"
+	}
+  ]);
+  
+  // Generators
+  Blockly.Generator.R.forBlock['access_s4_slot'] = function(block, generator) {
+	const object = generator.valueToCode(block, 'OBJECT', Blockly.Generator.R.ORDER_ATOMIC) || 'object';
+	const slot = block.getFieldValue('SLOT') || 'slot_name';
+	
+	const cleanSlot = slot.replace(/["']/g, '');
+	
+	const code = `${object}@${cleanSlot}`;
+	
+	if (block.outputConnection && !block.outputConnection.isConnected()) {
+	  return code + '\n';
+	}
+	return [code, Blockly.Generator.R.ORDER_ATOMIC];
+  };
+  
+  Blockly.Generator.R.forBlock['access_list_element'] = function(block, generator) {
+	const list = generator.valueToCode(block, 'LIST', Blockly.Generator.R.ORDER_ATOMIC) || 'list';
+	const index = generator.valueToCode(block, 'INDEX', Blockly.Generator.R.ORDER_ATOMIC) || '1';
+	
+	const code = `${list}[[${index}]]`;
+	
+	if (block.outputConnection && !block.outputConnection.isConnected()) {
+	  return code + '\n';
+	}
+	return [code, Blockly.Generator.R.ORDER_ATOMIC];
+  };
+  
+  Blockly.Generator.R.forBlock['access_matrix_element'] = function(block, generator) {
+	const matrix = generator.valueToCode(block, 'MATRIX', Blockly.Generator.R.ORDER_ATOMIC) || 'matrix';
+	const row = generator.valueToCode(block, 'ROW', Blockly.Generator.R.ORDER_ATOMIC) || '1';
+	const col = generator.valueToCode(block, 'COL', Blockly.Generator.R.ORDER_ATOMIC) || '1';
+	
+	const code = `${matrix}[${row}, ${col}]`;
+	
+	if (block.outputConnection && !block.outputConnection.isConnected()) {
+	  return code + '\n';
+	}
+	return [code, Blockly.Generator.R.ORDER_ATOMIC];
+  };

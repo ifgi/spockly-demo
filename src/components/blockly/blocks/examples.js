@@ -318,7 +318,7 @@ Blockly.Generator.R.forBlock["controls_if"] = function (block, generator) {
 
 Blockly.Generator.R.forBlock["install_package"] = function (block, generator) {
 	const packageName = block.getFieldValue("PACKAGE");
-	return `webr::install("${packageName}")\n`;
+	return `print(proj4string(${packageName}))\n`;
 };
 
 Blockly.defineBlocksWithJsonArray([

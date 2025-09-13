@@ -1,9 +1,16 @@
 import { asyncRun } from "./workerApi.mjs";
 
 const main = async function(code) {
+  var pandasToggle = false;
+  if(~code.indexOf('###DISPLAYALL###')) {
+    code = code.replace('###DISPLAYALL###', "pd.set_option('display.max_columns', None)\npd.set_option('display.max_rows', None)");
+    pandasToggle = true;
+  }
+
   const installAndImportCode = `
 import sys
 import io
+${pandasToggle ? 'import pandas as pd' : ''}
 _stdout = io.StringIO()
 sys.stdout = _stdout
 `;

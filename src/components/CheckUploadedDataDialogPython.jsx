@@ -15,12 +15,31 @@ import Snackbar from "@mui/material/Snackbar";
 import CloseIcon from "@mui/icons-material/Close";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import IconButton from "@mui/material/IconButton";
+import { pyodideWorker } from "./workerApi.mjs";
+
+const worker = pyodideWorker;
 
 const CheckUploadedDataDialog = ({ open, onClose }) => {
   const [files, setFiles] = useState([]);
-  const [filePreviews, setFilePreviews] = useState([]); // Array of { filename, table }
+  const [filePreviews, setFilePreviews] = useState([]);
   const [expandedPreviews, setExpandedPreviews] = useState({});
   const [copySuccess, setCopySuccess] = useState(false);
+
+  useEffect(() => {
+    const handleWorkerMessage = (event) => {
+      if (event.data.type === 'fileLoaded') {
+        setFiles(event.data.files);
+        globalThis.files = event.data.files;
+        globalThis.fileContents = event.data.contents;
+      }
+    };
+
+    worker.addEventListener('message', handleWorkerMessage);
+
+    return () => {
+      worker.removeEventListener('message', handleWorkerMessage);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchFiles = async () => {

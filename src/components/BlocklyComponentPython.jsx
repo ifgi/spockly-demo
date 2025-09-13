@@ -28,7 +28,7 @@ import { english } from "../locales/english.js";
 import { german } from "../locales/german.js";
 import * as De from "blockly/msg/de";
 import * as En from "blockly/msg/en"
-import co2Tutorial from "../data/co2Tutorial.js";
+import co2TutorialPython from "../data/co2TutorialPython.js";
 
 const lang = navigator.languages;
 if(lang.some((l) => l.startsWith('de'))) { //Reactivate after testing
@@ -100,13 +100,18 @@ const BlocklyComponent = ({ setCode, isDarkMode, onUploadClick, workspaceRef }) 
 
           <category name="${Blockly.Msg.Categories["DATA"]}" colour="#0396c1">
             <category name="${Blockly.Msg.Categories["DOWNLOAD_DATA"]}" colour="#0396c1">
-                <block type="func_download"></block>
-                <block type="sampleDataB"></block>
-                <block type="read_file"></block>
+              <block type="func_download"></block>
+              <block type="sampleDataB"></block>
+              <block type="read_file_pandas"></block>
+            </category>
+            <category name="${Blockly.Msg.Categories["DATA_INSPECTION"]}" colour="#0396c1">
+              <block type="describe"></block>
+              <block type="display_all"></block>
+              <block type="head"></block>
             </category>
             <category name="${Blockly.Msg.Categories["DATA_MANIPULATION"]}" colour="#0396c1">
-              <block type="convert_column"></block>        
-              <block type="data_shape"></block>
+              <block type="convert_column"></block>
+              <block type="get_column"></block>
               <block type="slice"></block>
               <block type="add_object"></block>
               <block type="delete_object"></block>
@@ -201,9 +206,16 @@ const BlocklyComponent = ({ setCode, isDarkMode, onUploadClick, workspaceRef }) 
 
 
       /*******
+       * 
+       * 
        * Level 2 Toolbox
+       * 
        * This toolbox includes more advanced blocks for data handling, visualisation, and spatial analysis.
+       * 
+       * 
        */
+
+
 
 
       const advancedToolbox = `
@@ -241,16 +253,33 @@ const BlocklyComponent = ({ setCode, isDarkMode, onUploadClick, workspaceRef }) 
               <block type="sampleDataA"></block>
               <block type="func_download"></block>
               <block type="read_file"></block>
+              <block type="read_file_pandas"></block>
               <block type="listdir"></block>  
               <block type="load_csv"></block>
               <block type="load_json"></block>
               <block type="request_json_data"></block>
               <block type="load_raster"></block>
             </category>
+            <category name="${Blockly.Msg.Categories["DATA_INSPECTION"]}" colour="#0396c1">
+              <block type="describe"></block>
+              <block type="data_shape"></block>
+              <block type="head"></block>
+              <block type="display_all"></block>
+            </category>
             <category name="${Blockly.Msg.Categories["DATA_MANIPULATION"]}" colour="#0396c1">
               <block type="convert_column"></block>
-              <block type="convert_np_to_pd"></block>          
-              <block type="data_shape"></block>
+              <block type="get_column"></block>
+              <block type="convert_np_to_pd">
+                <value name="columns">
+                  <block type="list_create">
+                    <value name="element_0">
+                      <block type="text">
+                        <field name="TEXT">column1</field>
+                      </block>
+                    </value>
+                  </block>
+                </value>
+              </block>
               <block type="slice"></block>
               <block type="stacking"></block>
               <block type="group_by"></block>
@@ -439,6 +468,19 @@ const BlocklyComponent = ({ setCode, isDarkMode, onUploadClick, workspaceRef }) 
           <category name="${Blockly.Msg.Categories["INTERPOLATION"]}" colour="#de6c00">
             <block type="idw_interpolation"></block>
             <block type="ppv_interpolation"></block>
+          </category>
+
+          <category name ="${Blockly.Msg.Categories["RASTER"]}" colour="#00ff80">
+            <block type="read_raster_data"></block>
+            <block type="clip_raster_bbox"></block>
+            <block type="save_raster"></block>
+            <block type="visualize_raster"></block>
+            <block type="raster_histogram"></block>
+            <block type="log_transform_raster"></block>
+            <block type="reclassify_raster"></block>
+            <block type="raster_to_point_grid"></block>
+            <block type="points_to_geodataframe"></block>
+            <block type="plot_geodataframe"></block>
           </category>
 
           <category name="${Blockly.Msg.Categories["MAPS"]}" colour="#8803c1">
@@ -942,7 +984,7 @@ def idw_interpolation(xi, yi, zi, xi_interp, yi_interp, power=2):
         step={stepCO2Tutorial}
         nextStep={nextStepCO2Tutorial}
         prevStep={prevStepCO2Tutorial}
-        tutorialData={co2Tutorial}
+        tutorialData={co2TutorialPython}
       />
     </Box>
   );

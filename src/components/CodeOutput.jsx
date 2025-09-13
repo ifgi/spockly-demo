@@ -78,17 +78,20 @@ const CodeOutput = ({ code, isDarkMode, setPlot }) => {
       }
     };
 
-    const runCode = async () => {
+    const runCode = async (runCodeArg) => {
+      const codeToRun = runCodeArg !== undefined ? runCodeArg : code;
       setIsAPlot(false);
       setIsAMap(false);
       setShowPlot(true);
       console.log('Running code...');
       setOutput("Running...");
-      if(~code.indexOf('plt.') || ~code.indexOf('df_interp.plot')) {
-        code = `
+      let codeForExec = codeToRun;
+      if(~codeForExec.indexOf('plt.') || ~codeForExec.indexOf('df_interp.plot')) {
+        codeForExec = `
 import io
 import base64
 import js
+import pandas as pd
 
 class Dud:
     def __init__(self, *args, **kwargs) -> None:
@@ -101,16 +104,16 @@ js.document = Dud()
 bytes_io = None
 base64_encoded_spectrogram = None
 
-${code}
+${codeForExec}
 
 bytes_io = io.BytesIO()
 plt.savefig(bytes_io, format='jpg')
 bytes_io.seek(0)
 base64_encoded_spectrogram = base64.b64encode(bytes_io.read())
-print(base64_encoded_spectrogram.decode('utf-8'))`
+print(base64_encoded_spectrogram.decode('utf-8'))`;
       }
 
-      const result = await main(code);
+      const result = await main(codeForExec);
 
       /*** Create map w/ Folium ***/
       const saveMap = !~code.indexOf('###DISPLAYONLY###');
@@ -204,19 +207,22 @@ print(base64_encoded_spectrogram.decode('utf-8'))`
       }
 
       setOutput(result);
-      if (typeof result === "string" && result.length > 100 && /^[A-Za-z0-9+/=\s]+$/.test(result)) {
+      var plotURL = '';
+      if (typeof result === "string" && ~result.indexOf('/9j/')) {
         setIsAPlot(true);
+        plotURL = '/9j/' + result.split('/9j/').slice(1, 1000).join('/9j/');
         try {
-          setPlot(result);
-        } catch {
+          setPlot(plotURL);
+        } catch(e) {
           setPlot("");
+          console.error("Plot parsing error:\n", e);
         }
       } else {
         setPlot("");
       }
 
       globalThis.getRes = () => {
-        return result;
+        return plotURL || result;
       }
     }
     useEffect(() => {
@@ -240,29 +246,40 @@ print(base64_encoded_spectrogram.decode('utf-8'))`
               try {
                   document.getElementsByClassName('Mui-disabled')[0].classList.remove('Mui-disabled');
               } catch {}
-              document.getElementById('toast').style.color = '#089d08';
+              document.getElementById('toast').style.color = '#44a1a0';
               document.querySelector('#toast p').innerHTML = 'Libraries loaded!';
               document.getElementById('toast').style.animation = 'slideOut 5s ease-in-out';
               setTimeout(() => document.getElementById('toast').style.display = 'none', 4950);
-              document.addEventListener(
-                "keydown",
-                (ev) => {
-                  const keyName = ev.key;
-                      if (keyName === "Control") {
-                      return;
-                  }
-                  if ((ev.ctrlKey || ev.metaKey) && ev.altKey && keyName === 'Enter') {
-                    ev.preventDefault();
-                    runCode();
-                  }
-                },
-                false,
-              );
+              
             }
         }
       };
       findInfo();
     });
+
+const codeRef = useRef(code);
+
+useEffect(() => {
+  codeRef.current = code;
+}, [code]);
+
+useEffect(() => {
+  const handler = (ev) => {
+    const keyName = ev.key;
+    if (keyName === "Control") return;
+    if ((ev.ctrlKey || ev.metaKey) && ev.altKey && keyName === 'Enter') {
+      ev.preventDefault();
+      runCodeWithLatestCode();
+    }
+  };
+
+  document.addEventListener("keydown", handler, false);
+  return () => document.removeEventListener("keydown", handler);
+}, []);
+
+const runCodeWithLatestCode = () => {
+  runCode(codeRef.current);
+};
 
     return (
         <Box
@@ -286,7 +303,7 @@ print(base64_encoded_spectrogram.decode('utf-8'))`
             </Box>
             <Tooltip title="Run Python Code">
               <IconButton
-                onClick={ runCode }
+                onClick={ () => runCode(codeRef.current) }
                 disabled={ isLoading }
                 sx={{
                   bgcolor: "#33bfff",

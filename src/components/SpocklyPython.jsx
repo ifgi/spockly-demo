@@ -67,13 +67,46 @@ await pyodide_js.loadPackage(['pandas', 'geopandas', 'requests', 'numpy', 'shape
     setUploadDialogOpen(false);
   };
 
+//Keyboard shortcuts
+  try {
+    document.addEventListener(
+      "keydown",
+      (ev) => {
+        const keyName = ev.key;
+          if (keyName === "Control") {
+          return;
+       }
+        if ((ev.ctrlKey || ev.metaKey) && keyName === 'ArrowRight') {
+          ev.preventDefault();
+          setValue((value + 1) > 2 ? 2 : (value + 1));
+        }
+      },
+      false,
+    );
+    document.addEventListener(
+      "keydown",
+      (ev) => {
+        const keyName = ev.key;
+        if (keyName === "Control") {
+          return;
+        }
+        if ((ev.ctrlKey || ev.metaKey) && keyName === 'ArrowLeft') {
+          ev.preventDefault();
+          setValue((value - 1) < 0 ? 0 : (value - 1));
+        }
+      },
+      false,
+    );
+  } catch (e) {
+    console.warn("Keyboard shortcuts not available in this environment.");
+  }
   document.addEventListener(
     "keydown",
     (ev) => {
-    const keyName = ev.key;
+      const keyName = ev.key;
         if (keyName === "Control") {
         return;
-    }
+     }
       if ((ev.ctrlKey || ev.metaKey) && ev.altKey && keyName === 'o') {
         ev.preventDefault();
         setValue(2);
@@ -84,10 +117,10 @@ await pyodide_js.loadPackage(['pandas', 'geopandas', 'requests', 'numpy', 'shape
   document.addEventListener(
     "keydown",
     (ev) => {
-    const keyName = ev.key;
+      const keyName = ev.key;
         if (keyName === "Control") {
         return;
-    }
+      }
       if ((ev.ctrlKey || ev.metaKey) && ev.altKey && keyName === 'c') {
         ev.preventDefault();
         setValue(1);
@@ -98,10 +131,10 @@ await pyodide_js.loadPackage(['pandas', 'geopandas', 'requests', 'numpy', 'shape
   document.addEventListener(
     "keydown",
     (ev) => {
-    const keyName = ev.key;
-        if (keyName === "Control") {
+      const keyName = ev.key;
+      if (keyName === "Control") {
         return;
-    }
+      }
       if ((ev.ctrlKey || ev.metaKey) && ev.altKey && keyName === 'h') {
         ev.preventDefault();
         setValue(0);
@@ -247,7 +280,6 @@ await pyodide_js.loadPackage(['pandas', 'geopandas', 'requests', 'numpy', 'shape
         </Grid>
       </Grid>
       <FileUploadManager
-        workspaceRef={ workspaceRef.current }
         isDarkMode={ isDarkMode }
         open={ uploadDialogOpen }
         onClose={ handleUploadClose }

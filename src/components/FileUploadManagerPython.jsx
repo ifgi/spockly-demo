@@ -25,12 +25,14 @@ import CloseIcon from '@mui/icons-material/Close';
 import { CheckCircle, Error, InsertDriveFile, Map, Forward } from '@mui/icons-material';
 import { writeFile } from './workerApi.mjs';
 
-globalThis.files = [];
-globalThis.fileColumns = [];
-globalThis.fileContents = {};
+if(!globalThis.files && !globalThis.fileColumns && !globalThis.fileContents) {
+  globalThis.files = [];
+  globalThis.fileColumns = [];
+  globalThis.fileContents = {};
+}
 
 // Component for managing file uploads to WebR, including validation, preview, and usage instructions.
-const FileUploadManager = ({ workspaceRef, isDarkMode, open, onClose }) => {
+const FileUploadManager = ({ isDarkMode, open, onClose }) => {
   // State variables to track upload status, file details, and UI flags
   const [uploadStatus, setUploadStatus] = useState(null);
   const [fileName, setFileName] = useState('');
@@ -41,7 +43,7 @@ const FileUploadManager = ({ workspaceRef, isDarkMode, open, onClose }) => {
   const [filePreview, setFilePreview] = useState([]);
   const [copySuccess, setCopySuccess] = useState(false);
 
-  // Handles the file upload process: reading file, writing to WebR FS, and generating preview if applicable
+  // Handles the file upload process: reading file and generating preview if applicable
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -99,7 +101,7 @@ const FileUploadManager = ({ workspaceRef, isDarkMode, open, onClose }) => {
         } catch {
           setFilePreview([['Invalid GeoJSON']]);
         }
-      } else if (extension === 'tif') {
+      } else if (extension === 'tif' || extension === 'tiff') {
         setFilePreview([['Raster preview not available.']]);
       } else {
         setFilePreview([]);

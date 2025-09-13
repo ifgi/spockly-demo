@@ -5,7 +5,7 @@ export default function Toast() {
       style={{
         position: "fixed",
         fontSize: "20px",
-        color: "orange",
+        color: "#ffd966",
         zIndex: 1051,
         float: "right",
         overflow: "hidden",

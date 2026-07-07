@@ -5,8 +5,9 @@ export default defineConfig({
   plugins: [react()],
   build: {
     rollupOptions: {
+      // Prevent bundling of CDN imports
+      external: [/^https:\/\/cdn\.jsdelivr\.net\/pyodide\/.*/],
       output: {
-        // Preserve WebR WASM files without hash for proper loading
         assetFileNames: (assetInfo) => {
           if (assetInfo.name && assetInfo.name.endsWith(".wasm")) {
             return "[name][extname]";
@@ -16,8 +17,14 @@ export default defineConfig({
       },
     },
   },
+  // Apply the same external rule to worker builds
+  worker: {
+    format: "es",
+    rollupOptions: {
+      external: [/^https:\/\/cdn\.jsdelivr\.net\/pyodide\/.*/],
+    },
+  },
   server: {
-    // Enable COOP/COEP headers for local development
     headers: {
       "Cross-Origin-Embedder-Policy": "require-corp",
       "Cross-Origin-Opener-Policy": "same-origin",
@@ -25,14 +32,12 @@ export default defineConfig({
     host: true,
   },
   preview: {
-    // Enable COOP/COEP headers for preview mode
     headers: {
       "Cross-Origin-Embedder-Policy": "require-corp",
       "Cross-Origin-Opener-Policy": "same-origin",
     },
   },
   optimizeDeps: {
-    // Exclude WebR and pyodide packages from dependency optimization
     exclude: ["@r-wasm/webr", "webr", "pyodide"],
   },
 });

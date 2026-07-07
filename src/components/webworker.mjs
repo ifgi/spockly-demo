@@ -1,6 +1,8 @@
 import { loadPyodide } from "https://cdn.jsdelivr.net/pyodide/v0.27.6/full/pyodide.mjs";
 
-let pyodideReadyPromise = loadPyodide().then((pyodide) => {
+let pyodideReadyPromise = loadPyodide({
+  indexURL: "https://cdn.jsdelivr.net/pyodide/v0.27.6/full/",
+}).then((pyodide) => {
   self.postMessage({ ready: true });
   return pyodide;
 });
@@ -24,10 +26,10 @@ self.onmessage = async (event) => {
   await pyodide.loadPackagesFromImports(python);
   await pyodide.loadPackage("micropip");
   const micropip = pyodide.pyimport("micropip");
-  await micropip.install('plotly.express');
+  await micropip.install("plotly.express");
   await micropip.install("ssl");
-  await micropip.install('geopy');
-  await micropip.install('folium');
+  await micropip.install("geopy");
+  await micropip.install("folium");
 
   const dict = pyodide.globals.get("dict");
   const globals = dict(Object.entries(context));

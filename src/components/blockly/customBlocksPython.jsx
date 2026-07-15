@@ -1130,8 +1130,10 @@ Blockly.Blocks['plot'] = {
     this.appendDummyInput()
         .appendField('Plot line');
     this.appendValueInput('valX')
+        .setCheck(['Array', 'List'])
         .appendField('X-value');
     this.appendValueInput('valY')
+        .setCheck(['Array', 'List'])
         .appendField('Y-value');
     this.appendDummyInput('fmt')
         .appendField('Colour')
@@ -1193,8 +1195,10 @@ Blockly.Blocks['scatter'] = {
     this.appendDummyInput()
         .appendField('Plot points');
     this.appendValueInput('valX')
+        .setCheck(['Array', 'List', 'Number'])
         .appendField('X-value');
     this.appendValueInput('valY')
+        .setCheck(['Array', 'List', 'Number'])
         .appendField('Y-value');
     this.appendDummyInput()
         .appendField('Colour')

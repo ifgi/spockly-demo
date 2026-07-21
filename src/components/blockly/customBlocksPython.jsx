@@ -1409,6 +1409,373 @@ pythonGenerator.forBlock['boxplot'] = function(block, generator) {
   `plt.ylabel('${labels[1]}')\n`
 }
 
+Blockly.Blocks['histogram'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('Histogram');
+    this.appendValueInput('data')
+        .setCheck('Array', 'List')
+        .appendField('Data');
+    this.appendDummyInput('title')
+        .appendField('Title')
+        .appendField(new Blockly.FieldTextInput('Title'), 'TITLE');
+    this.appendDummyInput('x_label')
+        .appendField('X-axis label')
+        .appendField(new Blockly.FieldTextInput('Label'), 'X_LABEL');
+    this.appendDummyInput('size')
+        .appendField('Size:')
+        .appendField('X')
+        .appendField(new Blockly.FieldNumber('5'), 'X_SIZE')
+        .appendField('Y')
+        .appendField(new Blockly.FieldNumber('5'), 'Y_SIZE');
+    this.appendDummyInput('bins')
+        .appendField('Bins:')
+        .appendField(new Blockly.FieldNumber('10'), 'BINS');
+    this.appendDummyInput('color')
+        .appendField('Color:')
+        .appendField(new Blockly.FieldTextInput('blue'), 'COLOR');
+    this.appendDummyInput('grid')
+        .appendField('Grid?')
+        .appendField(new Blockly.FieldCheckbox('FALSE'), 'GRID');
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setTooltip('Plot a histogram');
+    this.setHelpUrl('https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.hist.html');
+    this.setColour(325);
+  }
+}
+pythonGenerator.forBlock['histogram'] = function(block, generator) {
+  const data = generator.valueToCode(block, 'data', pythonGenerator.ORDER_NONE) || "[0]";
+  const title = block.getFieldValue('TITLE') || "plot";
+  const x_label = block.getFieldValue('X_LABEL') || "X";
+  const size = [block.getFieldValue('X_SIZE') || 1, block.getFieldValue('Y_SIZE') || 1];
+  const bins = block.getFieldValue('BINS') || 10;
+  const color = block.getFieldValue('COLOR') || "blue";
+  let grid = block.getFieldValue('GRID').toLowerCase();
+  grid = grid[0].toUpperCase() + grid.slice(1);
+  return `plt.figure(figsize = (${size[0]}, ${size[1]}))\n` +
+  `plt.hist(${data}, bins=${bins}, color="${color}")\n` +
+  `plt.title("${title}")\n` +
+  `plt.xlabel("${x_label}")\n` +
+  `plt.ylabel("Frequency")\n` +
+  `plt.grid(visible=${grid})`
+}
+
+Blockly.Blocks['density_plot'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('Density plot');
+    this.appendValueInput('data')
+        .setCheck('Array', 'List')
+        .appendField('Data');
+    this.appendDummyInput('title')
+        .appendField('Title')
+        .appendField(new Blockly.FieldTextInput('Title'), 'TITLE');
+    this.appendDummyInput('x_label')
+        .appendField('X-axis label')
+        .appendField(new Blockly.FieldTextInput('Label'), 'X_LABEL');
+    this.appendDummyInput('size')
+        .appendField('Size:')
+        .appendField('X')
+        .appendField(new Blockly.FieldNumber('5'), 'X_SIZE')
+        .appendField('Y')
+        .appendField(new Blockly.FieldNumber('5'), 'Y_SIZE');
+    this.appendDummyInput('color')
+        .appendField('Color:')
+        .appendField(new Blockly.FieldTextInput('blue'), 'COLOR');
+    this.appendDummyInput('grid')
+        .appendField('Grid?')
+        .appendField(new Blockly.FieldCheckbox('FALSE'), 'GRID');
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setTooltip('Plot a density plot');
+    this.setHelpUrl('https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.gaussian_kde.html');
+    this.setColour(325);
+  }
+}
+pythonGenerator.forBlock['density_plot'] = function(block, generator) {
+  const data = generator.valueToCode(block, 'data', pythonGenerator.ORDER_NONE) || "[0]";
+  const title = block.getFieldValue('TITLE') || "plot";
+  const x_label = block.getFieldValue('X_LABEL') || "X";
+  const size = [block.getFieldValue('X_SIZE') || 1, block.getFieldValue('Y_SIZE') || 1];
+  const color = block.getFieldValue('COLOR') || "blue";
+  let grid = block.getFieldValue('GRID').toLowerCase();
+  grid = grid[0].toUpperCase() + grid.slice(1);
+  return `density = gaussian_kde(${data})\n` +
+  `x_min, x_max = np.min(${data}), np.max(${data})\n` +
+  `x = np.linspace(x_min, x_max, 200)\n` +
+  `plt.figure(figsize = (${size[0]}, ${size[1]}))\n` +
+  `plt.plot(x, density(x), color="${color}")\n` +
+  `plt.title("${title}")\n` +
+  `plt.xlabel("${x_label}")\n` +
+  `plt.ylabel("Density")\n` +
+  `plt.grid(visible=${grid})`
+}
+
+Blockly.Blocks['heatmap'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('Heatmap');
+    this.appendValueInput('matrix')
+        .setCheck('Array', 'List')
+        .appendField('Matrix');
+    this.appendDummyInput('title')
+        .appendField('Title')
+        .appendField(new Blockly.FieldTextInput('Title'), 'TITLE');
+    this.appendDummyInput('x_label')
+        .appendField('X-axis label')
+        .appendField(new Blockly.FieldTextInput('Label'), 'X_LABEL');
+    this.appendDummyInput('y_label')
+        .appendField('Y-axis label')
+        .appendField(new Blockly.FieldTextInput('Label'), 'Y_LABEL');
+    this.appendDummyInput('colormap')
+        .appendField('Colormap:')
+        .appendField(new Blockly.FieldTextInput('viridis'), 'COLORMAP');
+    this.appendDummyInput('colorbar')
+        .appendField('Colorbar?')
+        .appendField(new Blockly.FieldCheckbox('TRUE'), 'COLORBAR');
+    this.appendDummyInput('annotations')
+        .appendField('Annotations?')
+        .appendField(new Blockly.FieldCheckbox('FALSE'), 'ANNOTATIONS');
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setTooltip('Plot a heatmap of 2D data');
+    this.setHelpUrl('https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.imshow.html');
+    this.setColour(325);
+  }
+}
+pythonGenerator.forBlock['heatmap'] = function(block, generator) {
+  const matrix = generator.valueToCode(block, 'matrix', pythonGenerator.ORDER_NONE) || "[0]";
+  const title = block.getFieldValue('TITLE') || "plot";
+  const x_label = block.getFieldValue('X_LABEL') || "X";
+  const y_label = block.getFieldValue('Y_LABEL') || "Y";
+  const colormap = block.getFieldValue('COLORMAP') || "viridis";
+  let colorbar = block.getFieldValue('COLORBAR').toLowerCase();
+  let annotations = block.getFieldValue('ANNOTATIONS').toLowerCase();
+  let out = `data = ${matrix}\n` +
+  `plt.figure()\n` +
+  `plt.imshow(data, cmap="${colormap}")\n` +
+  `plt.title("${title}")\n` +
+  `plt.xlabel("${x_label}")\n` +
+  `plt.ylabel("${y_label}")\n`;
+  if (colorbar == "true") {
+    out += `plt.colorbar()\n`;
+  }
+  if (annotations == "true") {
+    out += `n, p = np.array(data).shape\n` +
+    `for i in range(n):\n` +
+    `\tfor j in range(p):\n` +
+    `\t\tplt.annotate(str(data[i][j]), xy=(j, i), ha='center', va='center', color='white')`;
+  }
+  return out
+}
+
+/* W.I.P.
+var default_plot_type = "points";
+var plot_values = {
+  "points": ["x_value", "y_value", "color", "title", "size", "x_label", "y_label", "legend", "grid"],
+  "line": ["x_value", "y_value", "color", "title", "size", "x_label", "y_label", "legend", "grid"],
+  "pie_chart": ["sizes", "labels", "title", "percentages"],
+  "bar_chart": ["heights", "labels", "title", "x_label", "y_label"],
+  "boxplot": ["data", "labels", "vertical", "add_notches", "title", "x_label", "y_label"],
+  "histogram": ["x_value"],
+  "density": ["x_value"]
+}
+var connect_legend, connect_sizes, connect_labels, connect_heights, connect_data;
+var connections_loaded;
+Blockly.Blocks['global_plot'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('Plot')
+        .appendField(new Blockly.FieldDropdown([
+          ["Points", "points"],
+          ["Line", "line"],
+          ["Pie chart", "pie_chart"],
+          ["Bar chart", "bar_chart"],
+          ["Boxplot", "boxplot"],
+          ["Histogram", "histogram"],
+          ["Density plot", "density"]
+        ]), 'PLOT_TYPE');
+    this.appendValueInput('x_value')
+        .setCheck(['Array', 'List'])
+        .appendField('X-value');
+    this.appendValueInput('y_value')
+        .setCheck(['Array', 'List'])
+        .appendField('Y-value');
+    this.appendDummyInput('color')
+        .appendField('Colour')
+        .appendField(new Blockly.FieldTextInput('red'), 'COLOR');
+    this.appendDummyInput('title')
+        .appendField('Title')
+        .appendField(new Blockly.FieldTextInput('Title'), 'TITLE');
+    this.appendDummyInput('size')
+        .appendField('Size:')
+        .appendField('X')
+        .appendField(new Blockly.FieldNumber('1'), 'X_SIZE')
+        .appendField('Y')
+        .appendField(new Blockly.FieldNumber('1'), 'Y_SIZE');
+    this.appendDummyInput('x_label')
+        .appendField('X-axis label')
+        .appendField(new Blockly.FieldTextInput('Label'), 'X_LABEL');
+    this.appendDummyInput('y_label')
+        .appendField('Y-axis label')
+        .appendField(new Blockly.FieldTextInput('Label'), 'Y_LABEL');
+    this.appendValueInput('legend')
+        .setCheck('List')
+        .appendField('Legend');
+    this.appendDummyInput('grid')
+        .appendField('Grid?')
+        .appendField(new Blockly.FieldCheckbox('FALSE'), 'GRID');
+    this.appendValueInput('sizes');
+    this.appendValueInput('labels');
+    this.appendValueInput('heights');
+    this.appendValueInput('data');
+    this.setInputsInline(false);
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setTooltip('Create a plot');
+    this.setHelpUrl('https://en.wikipedia.org/wiki/Box_plot');
+    this.setColour(325);
+    connections_loaded = false;
+  },
+  onchange: function() {
+    if (! connections_loaded) {
+      connect_legend = this.getInput('legend').connection.targetBlock();
+      connect_sizes = this.getInput('sizes').connection.targetBlock();
+      connect_labels = this.getInput('labels').connection.targetBlock();
+      connect_heights = this.getInput('heights').connection.targetBlock();
+      connect_data = this.getInput('data').connection.targetBlock();
+      var connect_sizes_copy = structuredClone(connect_sizes);
+      connect_sizes.dispose();
+      connect_labels.dispose();
+      connect_heights.dispose();
+      connect_data.dispose();
+      console.log(connect_sizes_copy);
+      this.removeInput('sizes');
+      this.removeInput('labels');
+      this.removeInput('heights');
+      this.removeInput('data');
+      connections_loaded = true;
+    }
+    if (this.getFieldValue('PLOT_TYPE') != default_plot_type) {
+      var new_plot_type = this.getFieldValue('PLOT_TYPE');
+      // Remove all the inputs of the previous plot type
+      for (let i in plot_values[default_plot_type]) {
+        this.removeInput(plot_values[default_plot_type][i]);
+      }
+      // Add the inputs of the new plot type
+      for (let i in plot_values[new_plot_type]) {
+        let value = plot_values[new_plot_type][i];
+        if (value == "x_value") {
+          this.appendValueInput('x_value')
+              .setCheck(['Array', 'List'])
+              .appendField('X-value');
+        } else if (value == "y_value") {
+          this.appendValueInput('y_value')
+              .setCheck(['Array', 'List'])
+              .appendField('Y-value');
+        } else if (value == "color") {
+          this.appendDummyInput('color')
+              .appendField('Colour')
+              .appendField(new Blockly.FieldTextInput('red'), 'COLOR');
+        } else if (value == "title") {
+          this.appendDummyInput('title')
+              .appendField('Title')
+              .appendField(new Blockly.FieldTextInput('Title'), 'TITLE');
+        } else if (value == "size") {
+          this.appendDummyInput('size')
+              .appendField('Size:')
+              .appendField('X')
+              .appendField(new Blockly.FieldNumber('1'), 'X_SIZE')
+              .appendField('Y')
+              .appendField(new Blockly.FieldNumber('1'), 'Y_SIZE');
+        } else if (value == "x_label") {
+          this.appendDummyInput('x_label')
+              .appendField('X-axis label')
+              .appendField(new Blockly.FieldTextInput('Label'), 'X_LABEL');
+        } else if (value == "y_label") {
+          this.appendDummyInput('y_label')
+              .appendField('Y-axis label')
+              .appendField(new Blockly.FieldTextInput('Label'), 'Y_LABEL');
+        } else if (value == "grid") {
+          this.appendDummyInput('grid')
+              .appendField('Grid?')
+              .appendField(new Blockly.FieldCheckbox('FALSE'), 'GRID');
+        } else if (value == "vertical") {
+          this.appendDummyInput('vertical')
+              .appendField('Vertical')
+              .appendField(new Blockly.FieldCheckbox('TRUE'), 'ORIENTATION');
+        } else if (value == "add_notches") {
+          this.appendDummyInput('add_notches')
+              .appendField('Add notches')
+              .appendField(new Blockly.FieldCheckbox('FALSE'), 'NOTCHES');
+        } else if (value == "percentages") {
+          this.appendDummyInput('percentages')
+              .appendField('Percentages')
+              .appendField(new Blockly.FieldCheckbox('TRUE'), 'PERCENT');
+        } else if (value == "legend") {
+          this.appendValueInput('legend')
+              .setCheck('List')
+              .appendField('Legend');
+          this.getInput('legend').connection.connect(connect_legend.outputConnection);
+        } else if (value == "sizes") {
+          this.appendValueInput('sizes')
+              .setCheck('List')
+              .appendField('Sizes');
+          this.getInput('sizes').connection.connect(connect_sizes.outputConnection);
+        } else if (value == "labels") {
+          this.appendValueInput('labels')
+              .setCheck('List')
+              .appendField('Labels');
+          this.getInput('labels').connection.connect(connect_labels.outputConnection);
+        } else if (value == "heights") {
+          this.appendValueInput('heights')
+              .setCheck('List')
+              .appendField('Heights');
+          this.getInput('heights').connection.connect(connect_heights.outputConnection);
+        } else if (value == "data") {
+          this.appendValueInput('data')
+              .setCheck('List')
+              .appendField('Data');
+          this.getInput('data').connection.connect(connect_data.outputConnection);
+        }
+      }
+      default_plot_type = new_plot_type;
+    }
+  }
+}
+pythonGenerator.forBlock['global_plot'] = function(block, generator) {
+  const orientation = block.getFieldValue('orientation') === 'TRUE';
+  const notches = block.getFieldValue('notches') === 'TRUE';
+  const data = generator.valueToCode(block, 'data', pythonGenerator.ORDER_NONE) || "[0]";
+  const label_group = generator.valueToCode(block, 'label_group', pythonGenerator.ORDER_NONE) || "['null']";
+  const labels = [block.getFieldValue('XLabel') || "X", block.getFieldValue('YLabel') || "Y"];
+  const title = block.getFieldValue('title') || "Title";
+  return `plt.boxplot(${data}, labels = ${label_group}, vert = ${orientation ? 'True' : 'False'}, notch = ${notches ? 'True' : 'False'})\n` +
+  `plt.title('${title}')\n` +
+  `plt.xlabel('${labels[0]}')\n` + 
+  `plt.ylabel('${labels[1]}')\n`
+}
+
+Blockly.Blocks['export_png'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('Export plot to file')
+        .appendField(new Blockly.FieldTextInput('plot'), 'FILENAME')
+        .appendField('.PNG');
+    this.setPreviousStatement(true);
+    this.setNextStatement(false);
+    this.setTooltip('Export a plot to a PNG file');
+    this.setHelpUrl('https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.savefig.html');
+    this.setColour(325);
+  }
+}
+pythonGenerator.forBlock['export_png'] = function(block, generator) {
+  const filename = block.getFieldValue('FILENAME') || "plot";
+  return `plt.savefig('${filename}.png')`
+}
+*/
+
 //**GEOMETRY BLOCKS */
 Blockly.Blocks['create_point'] = { 
   init: function() {

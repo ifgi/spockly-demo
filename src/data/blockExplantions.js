@@ -606,5 +606,19 @@ const blockDescriptions = {
     infoText: "Train a random forest model for classification or regression.",
     functions: ["randomForest()"],
   },
+
+    /* Python version */
+  histogram: {
+      infoText: "Plot a histogram.",
+      functions: ["plt.hist()"],
+  },
+  density_plot: {
+      infoText: "Plot a density plot calculated by kernel density estimation.",
+      functions: ["scipy.stats.gaussian_kde()"],
+  },
+  heatmap: {
+      infoText: "Plot a heatmap of 2D data.",
+      functions: ["plt.imshow()", "plt.colorbar()"],
+  },
 };
 export default blockDescriptions;

@@ -203,6 +203,39 @@ print(base64_encoded_spectrogram.decode('utf-8'))`
         plotlyHandler(plotlyFileName);
       }
 
+      /*** Plot w/ Matplotlib - W.I.P.
+      const saveMatPlot = !~code.indexOf('###DISPLAYONLY###');
+      var matplotlibFileName;
+      try {
+        matplotlibFileName = code.split("savefig('")[1].split(".png')")[0];
+      } catch {
+        matplotlibFileName = 'plot';
+      }
+      window.matplotlibHandler = async (matplotlibFileName) => {
+        const canvas = canvasRef.current;
+        console.log(canvas);
+        if (canvas) {
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = filename;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+              setTextOutput(prev => prev + `\nPlot exported as ${filename}`);
+              return url;
+            }
+          }, 'image/png');
+        }
+      }
+      if(~code.indexOf("savefig('")) {
+        matplotlibHandler(matplotlibFileName);
+      }
+      ***/
+
       setOutput(result);
       if (typeof result === "string" && result.length > 100 && /^[A-Za-z0-9+/=\s]+$/.test(result)) {
         setIsAPlot(true);

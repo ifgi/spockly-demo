@@ -42,6 +42,7 @@ const WebRRunner = ({ code, isDarkMode, webRRef, setCurrentPackage }) => {
 
   const exportPlotAsPNG = (filename) => {
     const canvas = canvasRef.current;
+	// console.log(canvas);
     if (canvas) {
       canvas.toBlob((blob) => {
         if (blob) {

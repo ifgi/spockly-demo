@@ -1144,9 +1144,9 @@ Blockly.Blocks['plot'] = {
     this.appendDummyInput('size')
         .appendField('Size:')
         .appendField('X')
-        .appendField(new Blockly.FieldNumber('1'), 'XVAL')
+        .appendField(new Blockly.FieldNumber('10'), 'XVAL')
         .appendField('Y')
-        .appendField(new Blockly.FieldNumber('1'), 'YVAL');
+        .appendField(new Blockly.FieldNumber('10'), 'YVAL');
     this.appendDummyInput()
         .appendField('X-axis label')
         .appendField(new Blockly.FieldTextInput('Label'), 'XLVAL');;
@@ -1212,9 +1212,9 @@ Blockly.Blocks['scatter'] = {
     this.appendDummyInput()
         .appendField('Size:')
         .appendField('X')
-        .appendField(new Blockly.FieldNumber('1'), 'XVAL')
+        .appendField(new Blockly.FieldNumber('10'), 'XVAL')
         .appendField('Y')
-        .appendField(new Blockly.FieldNumber('1'), 'YVAL');
+        .appendField(new Blockly.FieldNumber('10'), 'YVAL');
     this.appendDummyInput()
         .appendField('X-axis label')
         .appendField(new Blockly.FieldTextInput('Label'), 'XLabel');
@@ -1445,9 +1445,9 @@ Blockly.Blocks['histogram'] = {
     this.appendDummyInput('size')
         .appendField('Size:')
         .appendField('X')
-        .appendField(new Blockly.FieldNumber('5'), 'X_SIZE')
+        .appendField(new Blockly.FieldNumber('10'), 'X_SIZE')
         .appendField('Y')
-        .appendField(new Blockly.FieldNumber('5'), 'Y_SIZE');
+        .appendField(new Blockly.FieldNumber('10'), 'Y_SIZE');
     this.appendDummyInput('bins')
         .appendField('Bins:')
         .appendField(new Blockly.FieldNumber('10'), 'BINS');
@@ -1501,9 +1501,9 @@ Blockly.Blocks['density_plot'] = {
     this.appendDummyInput('size')
         .appendField('Size:')
         .appendField('X')
-        .appendField(new Blockly.FieldNumber('5'), 'X_SIZE')
+        .appendField(new Blockly.FieldNumber('10'), 'X_SIZE')
         .appendField('Y')
-        .appendField(new Blockly.FieldNumber('5'), 'Y_SIZE');
+        .appendField(new Blockly.FieldNumber('10'), 'Y_SIZE');
     this.appendDummyInput('color')
         .appendField('Color:')
         .appendField(new Blockly.FieldTextInput('blue'), 'COLOR');

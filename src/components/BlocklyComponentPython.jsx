@@ -136,7 +136,12 @@ const BlocklyComponent = ({ setCode, isDarkMode, onUploadClick, workspaceRef }) 
                 </block>
               </value>
             </block>
+            <block type="subplots"></block>
+            
+            <!-- W.I.P.
             <block type="export_png"></block>
+            -->
+
           </category>
 
           <category name="${Blockly.Msg.Categories["STATISTICS"]}" colour="#05a219">
@@ -435,6 +440,7 @@ const BlocklyComponent = ({ setCode, isDarkMode, onUploadClick, workspaceRef }) 
             <block type="histogram"></block>
             <block type="density_plot"></block>
             <block type="heatmap"></block>
+            <block type="subplots"></block>
             
             <!-- W.I.P.
             <block type="export_png"></block>

@@ -1177,16 +1177,19 @@ pythonGenerator.forBlock['plot'] = function(block, generator) {
   const legend = generator.valueToCode(block, 'Legend', pythonGenerator.ORDER_NONE) || "Legend";
   let grid = block.getFieldValue('Grid').toLowerCase();
   grid = grid[0].toUpperCase() + grid.slice(1);
-  return '' +
+  let out = '' +
   `x = ${dataX}\n` +
-  `y = ${dataY}\n` +
-  `plt.figure(figsize = (${size[0]}, ${size[1]}))\n` + 
-  `plt.plot(x, y, color = '${format}')\n` + 
+  `y = ${dataY}\n`;
+  if (! ((block.getParent() != null) && (block.getParent().inputList[0].name == "nb_plots"))) { // if block not in a subplot
+    out += `plt.figure(figsize = (${size[0]}, ${size[1]}))\n`;
+  }
+  out += `plt.plot(x, y, color = '${format}')\n` + 
   `plt.title('${title}')\n` +
   `plt.xlabel('${labels[0]}')\n` + 
   `plt.ylabel('${labels[1]}')\n` +
   `plt.grid(${grid})\n` +
-  `plt.legend(${legend})\n`
+  `plt.legend(${legend})\n`;
+  return out;
 }
 
 /** Show scattered data */
@@ -1242,16 +1245,19 @@ pythonGenerator.forBlock['scatter'] = function(block, generator) {
   const legend = generator.valueToCode(block, 'Legend', pythonGenerator.ORDER_NONE) || "0";
   let grid = block.getFieldValue('Grid').toLowerCase();
   grid = grid[0].toUpperCase() + grid.slice(1);
-  return '' +
+  let out = '' +
   `x = ${dataX}\n` +
-  `y = ${dataY}\n` +
-  `plt.figure(figsize = (${size[0]}, ${size[1]}))\n` + 
-  `plt.scatter(x, y, color = '${col}')\n` + 
+  `y = ${dataY}\n`;
+  if (! ((block.getParent() != null) && (block.getParent().inputList[0].name == "nb_plots"))) { // if block not in a subplot
+    out += `plt.figure(figsize = (${size[0]}, ${size[1]}))\n`;
+  }
+  out += `plt.scatter(x, y, color = '${col}')\n` + 
   `plt.title('${title}')\n` +
   `plt.xlabel('${labels[0]}')\n` + 
   `plt.ylabel('${labels[1]}')\n` +
   `plt.grid(${grid})\n` +
-  `plt.legend(${legend})\n`
+  `plt.legend(${legend})\n`;
+  return out;
 }
 
 
@@ -1284,8 +1290,13 @@ pythonGenerator.forBlock['pie_chart'] = function(block, generator) {
   const labels = generator.valueToCode(block, 'labels', pythonGenerator.ORDER_NONE) || "['Label']";
   const percent = block.getFieldValue('percent') || 'TRUE';
   const title = block.getFieldValue('title') || "Title";
-  return `plt.pie(${sizes}, labels=${labels}, autopct=${percent === 'TRUE' ? '\'%1.1f%%\'':'None'})\n`
-      + `plt.title('${title}')\n`
+  let out = '';
+  if (! ((block.getParent() != null) && (block.getParent().inputList[0].name == "nb_plots"))) { // if block not in a subplot
+    out += `plt.figure()\n`;
+  }
+  out += `plt.pie(${sizes}, labels=${labels}, autopct=${percent === 'TRUE' ? '\'%1.1f%%\'':'None'})\n` +
+  `plt.title('${title}')\n`;
+  return out;
 }
 
 Blockly.Blocks['create_list_XCoords'] = {
@@ -1356,11 +1367,15 @@ pythonGenerator.forBlock['bar_chart'] = function(block, generator) {
   const labels = [block.getFieldValue('XLabel') || "X", block.getFieldValue('YLabel') || "Y"];
   const title = block.getFieldValue('title') || "Title";
   const heights = generator.valueToCode(block, 'heights', pythonGenerator.ORDER_NONE) || "[10]";
-  return '' +
-  `plt.bar(${sizes}, ${heights})\n` +
+  let out = '';
+  if (! ((block.getParent() != null) && (block.getParent().inputList[0].name == "nb_plots"))) { // if block not in a subplot
+    out += `plt.figure()\n`;
+  }
+  out += `plt.bar(${sizes}, ${heights})\n` +
   `plt.title('${title}')\n` +
   `plt.xlabel('${labels[0]}')\n` + 
-  `plt.ylabel('${labels[1]}')\n`
+  `plt.ylabel('${labels[1]}')\n`;
+  return out;
 }
 
 Blockly.Blocks['boxplot'] = {
@@ -1403,10 +1418,15 @@ pythonGenerator.forBlock['boxplot'] = function(block, generator) {
   const label_group = generator.valueToCode(block, 'label_group', pythonGenerator.ORDER_NONE) || "['null']";
   const labels = [block.getFieldValue('XLabel') || "X", block.getFieldValue('YLabel') || "Y"];
   const title = block.getFieldValue('title') || "Title";
-  return `plt.boxplot(${data}, labels = ${label_group}, vert = ${orientation ? 'True' : 'False'}, notch = ${notches ? 'True' : 'False'})\n` +
+  let out = '';
+  if (! ((block.getParent() != null) && (block.getParent().inputList[0].name == "nb_plots"))) { // if block not in a subplot
+    out += `plt.figure()\n`;
+  }
+  out += `plt.boxplot(${data}, labels = ${label_group}, vert = ${orientation ? 'True' : 'False'}, notch = ${notches ? 'True' : 'False'})\n` +
   `plt.title('${title}')\n` +
   `plt.xlabel('${labels[0]}')\n` + 
-  `plt.ylabel('${labels[1]}')\n`
+  `plt.ylabel('${labels[1]}')\n`;
+  return out;
 }
 
 Blockly.Blocks['histogram'] = {
@@ -1414,7 +1434,7 @@ Blockly.Blocks['histogram'] = {
     this.appendDummyInput()
         .appendField('Histogram');
     this.appendValueInput('data')
-        .setCheck('Array', 'List')
+        .setCheck(['Array', 'List'])
         .appendField('Data');
     this.appendDummyInput('title')
         .appendField('Title')
@@ -1453,12 +1473,16 @@ pythonGenerator.forBlock['histogram'] = function(block, generator) {
   const color = block.getFieldValue('COLOR') || "blue";
   let grid = block.getFieldValue('GRID').toLowerCase();
   grid = grid[0].toUpperCase() + grid.slice(1);
-  return `plt.figure(figsize = (${size[0]}, ${size[1]}))\n` +
-  `plt.hist(${data}, bins=${bins}, color="${color}")\n` +
+  let out = '';
+  if (! ((block.getParent() != null) && (block.getParent().inputList[0].name == "nb_plots"))) { // if block not in a subplot
+    out += `plt.figure(figsize = (${size[0]}, ${size[1]}))\n`;
+  }
+  out += `plt.hist(${data}, bins=${bins}, color="${color}")\n` +
   `plt.title("${title}")\n` +
   `plt.xlabel("${x_label}")\n` +
   `plt.ylabel("Frequency")\n` +
-  `plt.grid(visible=${grid})`
+  `plt.grid(visible=${grid})\n`;
+  return out;
 }
 
 Blockly.Blocks['density_plot'] = {
@@ -1466,7 +1490,7 @@ Blockly.Blocks['density_plot'] = {
     this.appendDummyInput()
         .appendField('Density plot');
     this.appendValueInput('data')
-        .setCheck('Array', 'List')
+        .setCheck(['Array', 'List'])
         .appendField('Data');
     this.appendDummyInput('title')
         .appendField('Title')
@@ -1501,15 +1525,19 @@ pythonGenerator.forBlock['density_plot'] = function(block, generator) {
   const color = block.getFieldValue('COLOR') || "blue";
   let grid = block.getFieldValue('GRID').toLowerCase();
   grid = grid[0].toUpperCase() + grid.slice(1);
-  return `density = gaussian_kde(${data})\n` +
+  let out = '' +
+  `density = gaussian_kde(${data})\n` +
   `x_min, x_max = np.min(${data}), np.max(${data})\n` +
-  `x = np.linspace(x_min, x_max, 200)\n` +
-  `plt.figure(figsize = (${size[0]}, ${size[1]}))\n` +
-  `plt.plot(x, density(x), color="${color}")\n` +
+  `x = np.linspace(x_min, x_max, 200)\n`;
+  if (! ((block.getParent() != null) && (block.getParent().inputList[0].name == "nb_plots"))) { // if block not in a subplot
+    out += `plt.figure(figsize = (${size[0]}, ${size[1]}))\n`;
+  }
+  out += `plt.plot(x, density(x), color="${color}")\n` +
   `plt.title("${title}")\n` +
   `plt.xlabel("${x_label}")\n` +
   `plt.ylabel("Density")\n` +
-  `plt.grid(visible=${grid})`
+  `plt.grid(visible=${grid})\n`;
+  return out;
 }
 
 Blockly.Blocks['heatmap'] = {
@@ -1517,7 +1545,7 @@ Blockly.Blocks['heatmap'] = {
     this.appendDummyInput()
         .appendField('Heatmap');
     this.appendValueInput('matrix')
-        .setCheck('Array', 'List')
+        .setCheck(['Array', 'List'])
         .appendField('Matrix');
     this.appendDummyInput('title')
         .appendField('Title')
@@ -1552,9 +1580,11 @@ pythonGenerator.forBlock['heatmap'] = function(block, generator) {
   const colormap = block.getFieldValue('COLORMAP') || "viridis";
   let colorbar = block.getFieldValue('COLORBAR').toLowerCase();
   let annotations = block.getFieldValue('ANNOTATIONS').toLowerCase();
-  let out = `data = ${matrix}\n` +
-  `plt.figure()\n` +
-  `plt.imshow(data, cmap="${colormap}")\n` +
+  let out = `data = ${matrix}\n`;
+  if (! ((block.getParent() != null) && (block.getParent().inputList[0].name == "nb_plots"))) { // if block not in a subplot
+    out += `plt.figure()\n`;
+  }
+  out += `plt.imshow(data, cmap="${colormap}")\n` +
   `plt.title("${title}")\n` +
   `plt.xlabel("${x_label}")\n` +
   `plt.ylabel("${y_label}")\n`;
@@ -1565,8 +1595,74 @@ pythonGenerator.forBlock['heatmap'] = function(block, generator) {
     out += `n, p = np.array(data).shape\n` +
     `for i in range(n):\n` +
     `\tfor j in range(p):\n` +
-    `\t\tplt.annotate(str(data[i][j]), xy=(j, i), ha='center', va='center', color='white')`;
+    `\t\tplt.annotate(str(data[i][j]), xy=(j, i), ha='center', va='center', color='white')\n`;
   }
+  return out;
+}
+
+var nb_plots = 2;
+var dropdown = [["2", "2"], ["3", "3"], ["4", "4"]];
+Blockly.Blocks['subplots'] = {
+  init: function() {
+    this.appendDummyInput('nb_plots')
+        .appendField('Figure with')
+        .appendField(new Blockly.FieldDropdown(dropdown), 'NB_PLOTS')
+        .appendField('subplots');
+    this.appendDummyInput('title')
+        .appendField('Title')
+        .appendField(new Blockly.FieldTextInput('Title'), 'TITLE');
+    for (let i = 1 ; i <= nb_plots ; i++) {
+      this.appendStatementInput('plot'+ i.toString())
+          .appendField('Plot ' + i.toString());
+    }
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setTooltip('Create a figure with multiple subplots');
+    this.setHelpUrl('https://matplotlib.org/stable/gallery/subplots_axes_and_figures/subplots_demo.html');
+    this.setColour(325);
+  },
+  onchange: function() {
+    if (this.getFieldValue('NB_PLOTS') != nb_plots) {
+      for (let i = 1 ; i <= nb_plots ; i++) {
+        this.removeInput('plot' + i.toString());
+      }
+      nb_plots = this.getFieldValue('NB_PLOTS');
+      if (nb_plots == "2") { // adapts the dropdown to avoid that the 1st value changes when opening the menu
+        dropdown = [["2", "2"], ["3", "3"], ["4", "4"]];
+      } else if (nb_plots == "3") {
+        dropdown = [["3", "3"], ["2", "2"], ["4", "4"]];
+      } else {
+        dropdown = [["4", "4"], ["2", "2"], ["3", "3"]];
+      }
+      this.removeInput('nb_plots');
+      this.removeInput('title');
+      this.appendDummyInput('nb_plots')
+        .appendField('Figure with')
+        .appendField(new Blockly.FieldDropdown(dropdown), 'NB_PLOTS')
+        .appendField('subplots');
+      this.appendDummyInput('title')
+        .appendField('Title')
+        .appendField(new Blockly.FieldTextInput('Title'), 'TITLE');
+      for (let i = 1 ; i <= nb_plots ; i++) {
+        this.appendStatementInput('plot'+ i.toString())
+            .setCheck(['plot', 'scatter', 'pie_chart', 'bar_chart', 'boxplot', 'histogram', 'density_plot', 'heatmap'])
+            .appendField('Plot ' + i.toString());
+      }
+    }
+  }
+}
+pythonGenerator.forBlock['subplots'] = function(block, generator) {
+  const title = block.getFieldValue('TITLE') || "plot";
+  let out  = '' + `plt.figure(figsize=(10, 10))\n`;
+  let plot_code;
+  for (let i = 1 ; i <= nb_plots ; i++) {
+    plot_code = generator.statementToCode(block, 'plot' + i.toString());
+    out += `plt.subplot(${1 + Math.trunc(nb_plots/3)}, 2, ${i})\n` + // 1 row if nb_plots = 2, 2 rows otherwise
+    `for i in range(1):\n` +
+    `${plot_code}`;
+  }
+  out += `plt.suptitle("${title}")\n` +
+  `plt.tight_layout()\n`;
   return out
 }
 
@@ -1772,7 +1868,7 @@ Blockly.Blocks['export_png'] = {
 }
 pythonGenerator.forBlock['export_png'] = function(block, generator) {
   const filename = block.getFieldValue('FILENAME') || "plot";
-  return `plt.savefig('${filename}.png')`
+  return `plt.savefig('${filename}.png')\n`
 }
 */
 

@@ -1666,21 +1666,22 @@ pythonGenerator.forBlock['subplots'] = function(block, generator) {
   return out
 }
 
-/* W.I.P.
-var default_plot_type = "points";
+/* Global plot block - W.I.P. */
 var plot_values = {
   "points": ["x_value", "y_value", "color", "title", "size", "x_label", "y_label", "legend", "grid"],
   "line": ["x_value", "y_value", "color", "title", "size", "x_label", "y_label", "legend", "grid"],
   "pie_chart": ["sizes", "labels", "title", "percentages"],
   "bar_chart": ["heights", "labels", "title", "x_label", "y_label"],
   "boxplot": ["data", "labels", "vertical", "add_notches", "title", "x_label", "y_label"],
-  "histogram": ["x_value"],
-  "density": ["x_value"]
+  "histogram": ["data", "title", "x_label", "size", "bins", "color", "grid"],
+  "density_plot": ["data", "title", "x_label", "size", "color", "grid"],
+  "heatmap": ["matrix", "title", "x_label", "y_label", "colormap", "colorbar", "annotations"],
 }
-var connect_legend, connect_sizes, connect_labels, connect_heights, connect_data;
-var connections_loaded;
+// var connect_legend, connect_sizes, connect_labels, connect_heights, connect_data;
+// var connections_loaded;
 Blockly.Blocks['global_plot'] = {
   init: function() {
+    this.default_plot_type = "points";
     this.appendDummyInput()
         .appendField('Plot')
         .appendField(new Blockly.FieldDropdown([
@@ -1690,7 +1691,8 @@ Blockly.Blocks['global_plot'] = {
           ["Bar chart", "bar_chart"],
           ["Boxplot", "boxplot"],
           ["Histogram", "histogram"],
-          ["Density plot", "density"]
+          ["Density plot", "density_plot"],
+          ["Heatmap", "heatmap"]
         ]), 'PLOT_TYPE');
     this.appendValueInput('x_value')
         .setCheck(['Array', 'List'])
@@ -1707,9 +1709,9 @@ Blockly.Blocks['global_plot'] = {
     this.appendDummyInput('size')
         .appendField('Size:')
         .appendField('X')
-        .appendField(new Blockly.FieldNumber('1'), 'X_SIZE')
+        .appendField(new Blockly.FieldNumber('10'), 'X_SIZE')
         .appendField('Y')
-        .appendField(new Blockly.FieldNumber('1'), 'Y_SIZE');
+        .appendField(new Blockly.FieldNumber('10'), 'Y_SIZE');
     this.appendDummyInput('x_label')
         .appendField('X-axis label')
         .appendField(new Blockly.FieldTextInput('Label'), 'X_LABEL');
@@ -1717,24 +1719,27 @@ Blockly.Blocks['global_plot'] = {
         .appendField('Y-axis label')
         .appendField(new Blockly.FieldTextInput('Label'), 'Y_LABEL');
     this.appendValueInput('legend')
-        .setCheck('List')
+        .setCheck(['Array', 'List'])
         .appendField('Legend');
     this.appendDummyInput('grid')
         .appendField('Grid?')
         .appendField(new Blockly.FieldCheckbox('FALSE'), 'GRID');
+        /*
     this.appendValueInput('sizes');
     this.appendValueInput('labels');
     this.appendValueInput('heights');
     this.appendValueInput('data');
+    */
     this.setInputsInline(false);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
     this.setTooltip('Create a plot');
     this.setHelpUrl('https://en.wikipedia.org/wiki/Box_plot');
     this.setColour(325);
-    connections_loaded = false;
+    // connections_loaded = false;
   },
   onchange: function() {
+    /*
     if (! connections_loaded) {
       connect_legend = this.getInput('legend').connection.targetBlock();
       connect_sizes = this.getInput('sizes').connection.targetBlock();
@@ -1753,11 +1758,12 @@ Blockly.Blocks['global_plot'] = {
       this.removeInput('data');
       connections_loaded = true;
     }
-    if (this.getFieldValue('PLOT_TYPE') != default_plot_type) {
+    */
+    if (this.getFieldValue('PLOT_TYPE') != this.default_plot_type) {
       var new_plot_type = this.getFieldValue('PLOT_TYPE');
       // Remove all the inputs of the previous plot type
-      for (let i in plot_values[default_plot_type]) {
-        this.removeInput(plot_values[default_plot_type][i]);
+      for (let i in plot_values[this.default_plot_type]) {
+        this.removeInput(plot_values[this.default_plot_type][i]);
       }
       // Add the inputs of the new plot type
       for (let i in plot_values[new_plot_type]) {
@@ -1782,9 +1788,9 @@ Blockly.Blocks['global_plot'] = {
           this.appendDummyInput('size')
               .appendField('Size:')
               .appendField('X')
-              .appendField(new Blockly.FieldNumber('1'), 'X_SIZE')
+              .appendField(new Blockly.FieldNumber('10'), 'X_SIZE')
               .appendField('Y')
-              .appendField(new Blockly.FieldNumber('1'), 'Y_SIZE');
+              .appendField(new Blockly.FieldNumber('10'), 'Y_SIZE');
         } else if (value == "x_label") {
           this.appendDummyInput('x_label')
               .appendField('X-axis label')
@@ -1809,50 +1815,211 @@ Blockly.Blocks['global_plot'] = {
           this.appendDummyInput('percentages')
               .appendField('Percentages')
               .appendField(new Blockly.FieldCheckbox('TRUE'), 'PERCENT');
+        } else if (value == "bins") {
+          this.appendDummyInput('bins')
+              .appendField('Bins:')
+              .appendField(new Blockly.FieldNumber('10'), 'BINS');
+        } else if (value == "colormap") {
+          this.appendDummyInput('colormap')
+              .appendField('Colormap:')
+              .appendField(new Blockly.FieldTextInput('viridis'), 'COLORMAP');
+        } else if (value == "colorbar") {
+          this.appendDummyInput('colorbar')
+              .appendField('Colorbar?')
+              .appendField(new Blockly.FieldCheckbox('TRUE'), 'COLORBAR');
+        } else if (value == "annotations") {
+          this.appendDummyInput('annotations')
+              .appendField('Annotations?')
+              .appendField(new Blockly.FieldCheckbox('FALSE'), 'ANNOTATIONS');
         } else if (value == "legend") {
           this.appendValueInput('legend')
-              .setCheck('List')
+              .setCheck(['Array', 'List'])
               .appendField('Legend');
-          this.getInput('legend').connection.connect(connect_legend.outputConnection);
+          // this.getInput('legend').connection.connect(connect_legend.outputConnection);
         } else if (value == "sizes") {
           this.appendValueInput('sizes')
-              .setCheck('List')
+              .setCheck(['Array', 'List'])
               .appendField('Sizes');
-          this.getInput('sizes').connection.connect(connect_sizes.outputConnection);
+          // this.getInput('sizes').connection.connect(connect_sizes.outputConnection);
         } else if (value == "labels") {
           this.appendValueInput('labels')
-              .setCheck('List')
+              .setCheck(['Array', 'List'])
               .appendField('Labels');
-          this.getInput('labels').connection.connect(connect_labels.outputConnection);
+          // this.getInput('labels').connection.connect(connect_labels.outputConnection);
         } else if (value == "heights") {
           this.appendValueInput('heights')
-              .setCheck('List')
+              .setCheck(['Array', 'List'])
               .appendField('Heights');
-          this.getInput('heights').connection.connect(connect_heights.outputConnection);
+          // this.getInput('heights').connection.connect(connect_heights.outputConnection);
         } else if (value == "data") {
           this.appendValueInput('data')
-              .setCheck('List')
+              .setCheck(['Array', 'List'])
               .appendField('Data');
-          this.getInput('data').connection.connect(connect_data.outputConnection);
+          // this.getInput('data').connection.connect(connect_data.outputConnection);
+        } else if (value == "matrix") {
+          this.appendValueInput('matrix')
+              .setCheck(['Array', 'List'])
+              .appendField('Matrix');
+          // ...
         }
       }
-      default_plot_type = new_plot_type;
+      this.default_plot_type = new_plot_type;
     }
   }
 }
 pythonGenerator.forBlock['global_plot'] = function(block, generator) {
-  const orientation = block.getFieldValue('orientation') === 'TRUE';
-  const notches = block.getFieldValue('notches') === 'TRUE';
-  const data = generator.valueToCode(block, 'data', pythonGenerator.ORDER_NONE) || "[0]";
-  const label_group = generator.valueToCode(block, 'label_group', pythonGenerator.ORDER_NONE) || "['null']";
-  const labels = [block.getFieldValue('XLabel') || "X", block.getFieldValue('YLabel') || "Y"];
-  const title = block.getFieldValue('title') || "Title";
-  return `plt.boxplot(${data}, labels = ${label_group}, vert = ${orientation ? 'True' : 'False'}, notch = ${notches ? 'True' : 'False'})\n` +
-  `plt.title('${title}')\n` +
-  `plt.xlabel('${labels[0]}')\n` + 
-  `plt.ylabel('${labels[1]}')\n`
+  let out;
+  if (this.default_plot_type == "points") {
+    const dataX = generator.valueToCode(block, 'x_value', pythonGenerator.ORDER_NONE) || "1";
+    const dataY = generator.valueToCode(block, 'y_value', pythonGenerator.ORDER_NONE) || "1";
+    const title = block.getFieldValue('TITLE') || "Title";
+    const col = block.getFieldValue('COLOR');
+    const size = [block.getFieldValue('X_SIZE'), block.getFieldValue('Y_SIZE')];
+    const xy_labels = [block.getFieldValue('X_LABEL') || "X", block.getFieldValue('Y_LABEL') || "Y"];
+    const legend = generator.valueToCode(block, 'legend', pythonGenerator.ORDER_NONE) || "0";
+    let grid = block.getFieldValue('GRID').toLowerCase();
+    grid = grid[0].toUpperCase() + grid.slice(1);
+    out = '' +
+    `x = ${dataX}\n` +
+    `y = ${dataY}\n`;
+    if (! ((block.getParent() != null) && (block.getParent().inputList[0].name == "nb_plots"))) { // if block not in a subplot
+      out += `plt.figure(figsize = (${size[0]}, ${size[1]}))\n`;
+    }
+    out += `plt.scatter(x, y, color = '${col}')\n` + 
+    `plt.title('${title}')\n` +
+    `plt.xlabel('${xy_labels[0]}')\n` + 
+    `plt.ylabel('${xy_labels[1]}')\n` +
+    `plt.grid(${grid})\n` +
+    `plt.legend(${legend})\n`;
+  } else if (this.default_plot_type == "line") {
+    const dataX = generator.valueToCode(block, 'x_value', pythonGenerator.ORDER_NONE) || "0";
+    const dataY = generator.valueToCode(block, 'y_value', pythonGenerator.ORDER_NONE) || "x";
+    const format = block.getFieldValue('COLOR') || 'black';
+    const title = block.getFieldValue('TITLE') || "Title";
+    const size = [block.getFieldValue('X_SIZE'), block.getFieldValue('Y_SIZE')];
+    const xy_labels = [block.getFieldValue('X_LABEL') || "X", block.getFieldValue('Y_LABEL') || "Y"];
+    const legend = generator.valueToCode(block, 'legend', pythonGenerator.ORDER_NONE) || "Legend";
+    let grid = block.getFieldValue('GRID').toLowerCase();
+    grid = grid[0].toUpperCase() + grid.slice(1);
+    out = '' +
+    `x = ${dataX}\n` +
+    `y = ${dataY}\n`;
+    if (! ((block.getParent() != null) && (block.getParent().inputList[0].name == "nb_plots"))) { // if block not in a subplot
+      out += `plt.figure(figsize = (${size[0]}, ${size[1]}))\n`;
+    }
+    out += `plt.plot(x, y, color = '${format}')\n` + 
+    `plt.title('${title}')\n` +
+    `plt.xlabel('${xy_labels[0]}')\n` + 
+    `plt.ylabel('${xy_labels[1]}')\n` +
+    `plt.grid(${grid})\n` +
+    `plt.legend(${legend})\n`;
+  } else if (this.default_plot_type == "pie_chart") {
+    const sizes = generator.valueToCode(block, 'sizes', pythonGenerator.ORDER_NONE) || "[100]";
+    const labels = generator.valueToCode(block, 'labels', pythonGenerator.ORDER_NONE) || "['Label']";
+    const percent = block.getFieldValue('PERCENT') || 'TRUE';
+    const title = block.getFieldValue('TITLE') || "Title";
+    out = '';
+    if (! ((block.getParent() != null) && (block.getParent().inputList[0].name == "nb_plots"))) { // if block not in a subplot
+      out += `plt.figure()\n`;
+    }
+    out += `plt.pie(${sizes}, labels=${labels}, autopct=${percent === 'TRUE' ? '\'%1.1f%%\'':'None'})\n` +
+    `plt.title('${title}')\n`;
+  } else if (this.default_plot_type == "bar_chart") {
+    const heights = generator.valueToCode(block, 'heights', pythonGenerator.ORDER_NONE) || "[5]";
+    const xy_labels = [block.getFieldValue('X_LABEL') || "X", block.getFieldValue('Y_LABEL') || "Y"];
+    const title = block.getFieldValue('TITLE') || "Title";
+    const labels = generator.valueToCode(block, 'labels', pythonGenerator.ORDER_NONE) || "[10]";
+    out = '';
+    if (! ((block.getParent() != null) && (block.getParent().inputList[0].name == "nb_plots"))) { // if block not in a subplot
+      out += `plt.figure()\n`;
+    }
+    out += `plt.bar(${labels}, ${heights})\n` +
+    `plt.title('${title}')\n` +
+    `plt.xlabel('${xy_labels[0]}')\n` + 
+    `plt.ylabel('${xy_labels[1]}')\n`;
+  } else if (this.default_plot_type == "boxplot") {
+    const orientation = block.getFieldValue('ORIENTATION') === 'TRUE';
+    const notches = block.getFieldValue('NOTCHES') === 'TRUE';
+    const data = generator.valueToCode(block, 'data', pythonGenerator.ORDER_NONE) || "[0]";
+    const labels = generator.valueToCode(block, 'labels', pythonGenerator.ORDER_NONE) || "['null']";
+    const xy_labels = [block.getFieldValue('X_LABEL') || "X", block.getFieldValue('Y_LABEL') || "Y"];
+    const title = block.getFieldValue('TITLE') || "Title";
+    out = '';
+    if (! ((block.getParent() != null) && (block.getParent().inputList[0].name == "nb_plots"))) { // if block not in a subplot
+      out += `plt.figure()\n`;
+    }
+    out += `plt.boxplot(${data}, labels = ${labels}, vert = ${orientation ? 'True' : 'False'}, notch = ${notches ? 'True' : 'False'})\n` +
+    `plt.title('${title}')\n` +
+    `plt.xlabel('${xy_labels[0]}')\n` + 
+    `plt.ylabel('${xy_labels[1]}')\n`;
+  } else if (this.default_plot_type == "histogram") {
+    const data = generator.valueToCode(block, 'data', pythonGenerator.ORDER_NONE) || "[0]";
+    const title = block.getFieldValue('TITLE') || "plot";
+    const x_label = block.getFieldValue('X_LABEL') || "X";
+    const size = [block.getFieldValue('X_SIZE') || 1, block.getFieldValue('Y_SIZE') || 1];
+    const bins = block.getFieldValue('BINS') || 10;
+    const color = block.getFieldValue('COLOR') || "blue";
+    let grid = block.getFieldValue('GRID').toLowerCase();
+    grid = grid[0].toUpperCase() + grid.slice(1);
+    out = '';
+    if (! ((block.getParent() != null) && (block.getParent().inputList[0].name == "nb_plots"))) { // if block not in a subplot
+      out += `plt.figure(figsize = (${size[0]}, ${size[1]}))\n`;
+    }
+    out += `plt.hist(${data}, bins=${bins}, color="${color}")\n` +
+    `plt.title("${title}")\n` +
+    `plt.xlabel("${x_label}")\n` +
+    `plt.ylabel("Frequency")\n` +
+    `plt.grid(visible=${grid})\n`;
+  } else if (this.default_plot_type == "density_plot") {
+    const data = generator.valueToCode(block, 'data', pythonGenerator.ORDER_NONE) || "[0]";
+    const title = block.getFieldValue('TITLE') || "plot";
+    const x_label = block.getFieldValue('X_LABEL') || "X";
+    const size = [block.getFieldValue('X_SIZE') || 1, block.getFieldValue('Y_SIZE') || 1];
+    const color = block.getFieldValue('COLOR') || "blue";
+    let grid = block.getFieldValue('GRID').toLowerCase();
+    grid = grid[0].toUpperCase() + grid.slice(1);
+    out = '' +
+    `density = gaussian_kde(${data})\n` +
+    `x_min, x_max = np.min(${data}), np.max(${data})\n` +
+    `x = np.linspace(x_min, x_max, 200)\n`;
+    if (! ((block.getParent() != null) && (block.getParent().inputList[0].name == "nb_plots"))) { // if block not in a subplot
+      out += `plt.figure(figsize = (${size[0]}, ${size[1]}))\n`;
+    }
+    out += `plt.plot(x, density(x), color="${color}")\n` +
+    `plt.title("${title}")\n` +
+    `plt.xlabel("${x_label}")\n` +
+    `plt.ylabel("Density")\n` +
+    `plt.grid(visible=${grid})\n`;
+  } else if (this.default_plot_type == "heatmap") {
+    const matrix = generator.valueToCode(block, 'matrix', pythonGenerator.ORDER_NONE) || "[0]";
+    const title = block.getFieldValue('TITLE') || "plot";
+    const x_label = block.getFieldValue('X_LABEL') || "X";
+    const y_label = block.getFieldValue('Y_LABEL') || "Y";
+    const colormap = block.getFieldValue('COLORMAP') || "viridis";
+    let colorbar = block.getFieldValue('COLORBAR').toLowerCase();
+    let annotations = block.getFieldValue('ANNOTATIONS').toLowerCase();
+    out = `data = ${matrix}\n`;
+    if (! ((block.getParent() != null) && (block.getParent().inputList[0].name == "nb_plots"))) { // if block not in a subplot
+      out += `plt.figure()\n`;
+    }
+    out += `plt.imshow(data, cmap="${colormap}")\n` +
+    `plt.title("${title}")\n` +
+    `plt.xlabel("${x_label}")\n` +
+    `plt.ylabel("${y_label}")\n`;
+    if (colorbar == "true") {
+      out += `plt.colorbar()\n`;
+    }
+    if (annotations == "true") {
+      out += `n, p = np.array(data).shape\n` +
+      `for i in range(n):\n` +
+      `\tfor j in range(p):\n` +
+      `\t\tplt.annotate(str(data[i][j]), xy=(j, i), ha='center', va='center', color='white')\n`;
+    }
+  }
+  return out;
 }
 
+/* Export block - W.I.P.
 Blockly.Blocks['export_png'] = {
   init: function() {
     this.appendDummyInput()

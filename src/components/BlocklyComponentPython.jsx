@@ -433,9 +433,43 @@ const BlocklyComponent = ({ setCode, isDarkMode, onUploadClick, workspaceRef }) 
                 </block>
               </value>
             </block>
-            <block type="histogram"></block>
-            <block type="density_plot"></block>
-            <block type="heatmap"></block>
+            <block type="histogram">
+              <value name="data">
+                <block type="list_create">
+                  <value name="element_0">
+                    <block type="math_number">
+                      <field name="NUM">1</field>
+                    </block>
+                  </value>
+                </block>
+              </value>
+            </block>
+            <block type="density_plot">
+              <value name="data">
+                <block type="list_create">
+                  <value name="element_0">
+                    <block type="math_number">
+                      <field name="NUM">1</field>
+                    </block>
+                  </value>
+                </block>
+              </value>
+            </block>
+            <block type="heatmap">
+              <value name="matrix">
+                <block type="list_create">
+                  <value name="element_0">
+                    <block type="list_create">
+                      <value name="element_0">
+                        <block type="math_number">
+                          <field name="NUM">1</field>
+                        </block>
+                      </value>
+                    </block>
+                  </value>
+                </block>
+              </value>
+            </block>
             <block type="subplots"></block>
             
             <!-- W.I.P.

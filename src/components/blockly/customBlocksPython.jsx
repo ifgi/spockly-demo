@@ -1600,18 +1600,21 @@ pythonGenerator.forBlock['heatmap'] = function(block, generator) {
   return out;
 }
 
-var nb_plots = 2;
-var dropdown = [["2", "2"], ["3", "3"], ["4", "4"]];
 Blockly.Blocks['subplots'] = {
   init: function() {
+    this.nb_plots = 2;
     this.appendDummyInput('nb_plots')
         .appendField('Figure with')
-        .appendField(new Blockly.FieldDropdown(dropdown), 'NB_PLOTS')
+        .appendField(new Blockly.FieldDropdown([
+          ["2", "2"],
+          ["3", "3"],
+          ["4", "4"]
+        ]), 'NB_PLOTS')
         .appendField('subplots');
     this.appendDummyInput('title')
         .appendField('Title')
         .appendField(new Blockly.FieldTextInput('Title'), 'TITLE');
-    for (let i = 1 ; i <= nb_plots ; i++) {
+    for (let i = 1 ; i <= this.nb_plots ; i++) {
       this.appendStatementInput('plot'+ i.toString())
           .appendField('Plot ' + i.toString());
     }
@@ -1622,28 +1625,12 @@ Blockly.Blocks['subplots'] = {
     this.setColour(325);
   },
   onchange: function() {
-    if (this.getFieldValue('NB_PLOTS') != nb_plots) {
-      for (let i = 1 ; i <= nb_plots ; i++) {
+    if (this.getFieldValue('NB_PLOTS') != this.nb_plots) {
+      for (let i = 1 ; i <= this.nb_plots ; i++) {
         this.removeInput('plot' + i.toString());
       }
-      nb_plots = this.getFieldValue('NB_PLOTS');
-      if (nb_plots == "2") { // adapts the dropdown to avoid that the 1st value changes when opening the menu
-        dropdown = [["2", "2"], ["3", "3"], ["4", "4"]];
-      } else if (nb_plots == "3") {
-        dropdown = [["3", "3"], ["2", "2"], ["4", "4"]];
-      } else {
-        dropdown = [["4", "4"], ["2", "2"], ["3", "3"]];
-      }
-      this.removeInput('nb_plots');
-      this.removeInput('title');
-      this.appendDummyInput('nb_plots')
-        .appendField('Figure with')
-        .appendField(new Blockly.FieldDropdown(dropdown), 'NB_PLOTS')
-        .appendField('subplots');
-      this.appendDummyInput('title')
-        .appendField('Title')
-        .appendField(new Blockly.FieldTextInput('Title'), 'TITLE');
-      for (let i = 1 ; i <= nb_plots ; i++) {
+      this.nb_plots = this.getFieldValue('NB_PLOTS');
+      for (let i = 1 ; i <= this.nb_plots ; i++) {
         this.appendStatementInput('plot'+ i.toString())
             .setCheck(['plot', 'scatter', 'pie_chart', 'bar_chart', 'boxplot', 'histogram', 'density_plot', 'heatmap'])
             .appendField('Plot ' + i.toString());
@@ -1655,9 +1642,9 @@ pythonGenerator.forBlock['subplots'] = function(block, generator) {
   const title = block.getFieldValue('TITLE') || "plot";
   let out  = '' + `plt.figure(figsize=(10, 10))\n`;
   let plot_code;
-  for (let i = 1 ; i <= nb_plots ; i++) {
+  for (let i = 1 ; i <= this.nb_plots ; i++) {
     plot_code = generator.statementToCode(block, 'plot' + i.toString());
-    out += `plt.subplot(${1 + Math.trunc(nb_plots/3)}, 2, ${i})\n` + // 1 row if nb_plots = 2, 2 rows otherwise
+    out += `plt.subplot(${1 + Math.trunc(this.nb_plots/3)}, 2, ${i})\n` + // 1 row if nb_plots = 2, 2 rows otherwise
     `for i in range(1):\n` +
     `${plot_code}`;
   }

@@ -609,8 +609,8 @@ const blockDescriptions = {
 
   /* Python version */
   quantile: {
-      infoText: "Compute quantiles at given probabilities.",
-      functions: ["np.quantile()"],
+    infoText: "Compute quantiles at given probabilities.",
+    functions: ["np.quantile()"],
   },
   select_column: {
     infoText: "Select a specific column of a dataframe.",
@@ -620,6 +620,22 @@ const blockDescriptions = {
     infoText: "Get the CSV file of SenseBox data for specific box id, phenomenon & timestamps.\
     The period of time starts on the from-date day at 00:00:00 and ends on the to-date day at 23:59:59.",
     functions: ["pd.read_csv()", "get.requests()"],
+  },
+  histogram: {
+    infoText: "Plot a histogram.",
+    functions: ["plt.hist()"],
+  },
+  density_plot: {
+    infoText: "Plot a density plot calculated by kernel density estimation.",
+    functions: ["scipy.stats.gaussian_kde()"],
+  },
+  heatmap: {
+    infoText: "Plot a heatmap of 2D data.",
+    functions: ["plt.imshow()", "plt.colorbar()"],
+  },
+  subplots: {
+    infoText: "Create a figure with 2 to 4 subplots.",
+    functions: ["plt.subplot()"],
   }
 };
 export default blockDescriptions;

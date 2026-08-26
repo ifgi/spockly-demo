@@ -139,7 +139,7 @@ const BlocklyComponent = ({ setCode, isDarkMode, onUploadClick, workspaceRef }) 
               </value>
             </block>
           </category>
-
+            
           <category name="${Blockly.Msg.Categories["STATISTICS"]}" colour="#05a219">
             <block type="mean"></block>
             <block type="median"></block>
@@ -385,6 +385,44 @@ const BlocklyComponent = ({ setCode, isDarkMode, onUploadClick, workspaceRef }) 
                 </block>
               </value>
             </block>
+            <block type="histogram">
+              <value name="data">
+                <block type="list_create">
+                  <value name="element_0">
+                    <block type="math_number">
+                      <field name="NUM">1</field>
+                    </block>
+                  </value>
+                </block>
+              </value>
+            </block>
+            <block type="density_plot">
+              <value name="data">
+                <block type="list_create">
+                  <value name="element_0">
+                    <block type="math_number">
+                      <field name="NUM">1</field>
+                    </block>
+                  </value>
+                </block>
+              </value>
+            </block>
+            <block type="heatmap">
+              <value name="matrix">
+                <block type="list_create">
+                  <value name="element_0">
+                    <block type="list_create">
+                      <value name="element_0">
+                        <block type="math_number">
+                          <field name="NUM">1</field>
+                        </block>
+                      </value>
+                    </block>
+                  </value>
+                </block>
+              </value>
+            </block>
+            <block type="subplots"></block>
           </category>
 
           <category name="${Blockly.Msg.Categories["STATISTICS"]}" colour="#05a219">
@@ -627,12 +665,12 @@ const BlocklyComponent = ({ setCode, isDarkMode, onUploadClick, workspaceRef }) 
       console.error("Blockly workspace is not initialised.");
       return;
     }
-    var libs = "", np, pd, gpd, sns, plt, requests, os, def_download, def_sensebox, px, folium, interpol_idw, interpol_ppv, geodes, point, line, polyg, multipolyg, box;
+    var libs = "", np, pd, gpd, sns, plt, requests, os, def_download, def_sensebox, px, folium, interpol_idw, interpol_ppv, geodes, point, line, polyg, multipolyg, box, kde;
     var pythonCode = pythonGenerator.workspaceToCode(workspaceRef.current);
     if(~pythonCode.indexOf('np.')) np = true;
     if(~pythonCode.indexOf('pd.')) pd = true;
     if(~pythonCode.indexOf('sns.')) sns = true;
-    if(~pythonCode.indexOf('plt.')) plt = true;
+    if(~pythonCode.indexOf('plt.') || ~pythonCode.indexOf('plot.kde')) plt = true;
     if(~pythonCode.indexOf('gpd.')) gpd = true;
     if(~pythonCode.indexOf('requests.')) requests = true;
     if(~pythonCode.indexOf('os.')) os = true;
@@ -648,6 +686,7 @@ const BlocklyComponent = ({ setCode, isDarkMode, onUploadClick, workspaceRef }) 
     if(~pythonCode.indexOf('Polygon([')) polyg = true;
     if(~pythonCode.indexOf('MultiPolygon([')) multipolyg = true;
     if(~pythonCode.indexOf('box')) box = true;
+    if(~pythonCode.indexOf('gaussian_kde')) kde = true;
     libs += np ? "import numpy as np\n" : "";
     libs += pd ? "import pandas as pd\n" : "";
     libs += sns ? "import seaborn as sns\n" : ""; 
@@ -703,6 +742,7 @@ def idw_interpolation(xi, yi, zi, xi_interp, yi_interp, power=2):
     weights /= weights.sum(axis=1)[:, None]
     zi_interp = np.sum(weights * zi[idx-1], axis=1)
     return zi_interp` : '';
+    libs += kde ? "from scipy.stats import gaussian_kde\n" : "";
     setCode((libs ? libs + '\n' : '') + pythonCode);
   };
 

@@ -390,6 +390,77 @@ pythonGenerator.forBlock['read_file'] = function(block,generator) {
   return [`gpd.read_file('${fileName}')`, pythonGenerator.ORDER_ATOMIC];
 }
 
+var load_sensebox_array_phenomena = [["", ""]];
+var load_sensebox_id_default = "id";
+Blockly.Blocks['load_sensebox'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('Read SenseBox data')
+    this.appendDummyInput()
+        .appendField('- Box Id:')
+        .appendField(new Blockly.FieldTextInput('id'), 'ID');
+    this.appendDummyInput()
+        .appendField('- From date:')
+        .appendField(new Blockly.FieldTextInput('DD'), 'DAY_FROM')
+        .appendField('/')
+        .appendField(new Blockly.FieldTextInput('MM'), 'MONTH_FROM')
+        .appendField('/')
+        .appendField(new Blockly.FieldTextInput('YYYY'), 'YEAR_FROM');
+    this.appendDummyInput()
+        .appendField('  To date:     ')
+        .appendField(new Blockly.FieldTextInput('DD'), 'DAY_TO')
+        .appendField('/')
+        .appendField(new Blockly.FieldTextInput('MM'), 'MONTH_TO')
+        .appendField('/')
+        .appendField(new Blockly.FieldTextInput('YYYY'), 'YEAR_TO');
+    this.appendDummyInput('pheno')
+        .appendField('- Phenomenon:')
+        .appendField(new Blockly.FieldDropdown(load_sensebox_array_phenomena), 'PHENOMENON');
+    this.setTooltip('Load a CSV file of SenseBox data.');
+    this.setOutput(true);
+    this.setHelpUrl('https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html');
+    this.setColour(210);
+  },
+  onchange: function() {
+    if (this.getFieldValue('ID') != load_sensebox_id_default) {
+      load_sensebox_id_default = this.getFieldValue('ID');
+      this.removeInput('pheno');
+      this.appendDummyInput('pheno')
+          .appendField('- Phenomenon: Loading...');
+      fetch("https://api.opensensemap.org/boxes/" + this.getFieldValue('ID') + "/sensors")
+      .then(HTTP => HTTP.json())
+      .then(result => {
+        if ("sensors" in result) {
+          load_sensebox_array_phenomena = [];
+          for (let i = 0 ; i < result.sensors.length ; i++) {
+            load_sensebox_array_phenomena.push([result.sensors[i].title, result.sensors[i].title]);
+          }
+          this.removeInput('pheno');
+          this.appendDummyInput('pheno')
+              .appendField('- Phenomenon:')
+              .appendField(new Blockly.FieldDropdown(load_sensebox_array_phenomena), 'PHENOMENON');
+        }
+      });
+    }
+  }
+};
+pythonGenerator.forBlock['load_sensebox'] = function(block,generator) {
+  const boxId = block.getFieldValue('ID');
+  const phenomenon = block.getFieldValue('PHENOMENON');
+  const dayFrom = block.getFieldValue('DAY_FROM');
+  const monthFrom = block.getFieldValue('MONTH_FROM');
+  const yearFrom = block.getFieldValue('YEAR_FROM');
+  const dayTo = block.getFieldValue('DAY_TO');
+  const monthTo = block.getFieldValue('MONTH_TO');
+  const yearTo = block.getFieldValue('YEAR_TO');
+  return [`pd.read_csv(load_sensebox( \
+  "https://api.opensensemap.org/boxes/data?boxId=" + "${boxId}" \
+  + "&from-date=" + "${yearFrom}" + "-" + "${monthFrom}" + "-" + "${dayFrom}" + "T00:00:00Z" \
+  + "&to-date=" + "${yearTo}" + "-" + "${monthTo}" + "-" + "${dayTo}" + "T23:59:59Z" \
+  + "&phenomenon=" + "${phenomenon}" + "&columns=lat,lon,boxName,boxId,unit,value,createdAt"))
+  `, pythonGenerator.ORDER_ATOMIC];
+}
+
 // Blockly.Blocks['write_file'] = {
 //   init: function() {
 //     this.appendDummyInput()
@@ -625,10 +696,76 @@ pythonGenerator.forBlock["min"] = function(block, generator) {
   return [`np.min(${mini})`, pythonGenerator.ORDER_ATOMIC];
 };
 
+/** 
+ * Quantiles of array of numbers
+ */
+Blockly.Blocks['quantile'] = { 
+  init: function() {
+    this.appendValueInput('quantile')
+        .setCheck('Array')
+        .appendField(new Blockly.FieldDropdown([
+          ["First quartile (25%)", "0.25"],
+          ["Median (50%)", "0.5"],
+          ["Third quartile (75%)", "0.75"],
+          ["90th percentile (90%)", "0.9"],
+          ["95th percentile (95%)", "0.95"],
+          ["99th percentile (99%)", "0.99"],
+          ["All quartiles (25%, 50%, 75%)", "[0.25, 0.5, 0.75]"],
+          ["All percentiles (0%, 25%, 50%, 75%, 100%)", "[0, 0.25, 0.5, 0.75, 1]"],
+          ["Custom percentile", "custom"]
+        ]), 'QUANTILE')
+        .appendField("of");
+    this.appendDummyInput('custom')
+        .appendField("Custom value (0 - 100):")
+        .appendField(new Blockly.FieldNumber(0), 'custom_q');
+    this.setOutput(true, 'Number');
+    this.setInputsInline(false);
+    this.setTooltip('Returns the selected quantile(s) of an array of numbers. To be used mainly on a column.');
+    this.setColour(150);
+  }
+};
+pythonGenerator.forBlock["quantile"] = function(block, generator) {
+  const data =
+    generator.valueToCode(block, "quantile", pythonGenerator.ORDER_NONE) || "0";
+  const selectedQ = block.getFieldValue('QUANTILE');
+  const customQ = block.getFieldValue('custom_q');
+  if (selectedQ == "custom") {
+    if (customQ < 0 || customQ > 100) {
+      return [`np.quantile(${data}, 0.5)`, pythonGenerator.ORDER_ATOMIC];
+    }
+    return [`np.quantile(${data}, ${customQ / 100})`, pythonGenerator.ORDER_ATOMIC];
+  }
+  return [`np.quantile(${data}, ${selectedQ})`, pythonGenerator.ORDER_ATOMIC];
+};
+
+
 /**
  * Manipulation data blocks
  */
-                
+      
+/* Select a dataframe column */
+Blockly.Blocks['select_column'] = {
+  init: function() {
+    this.appendDummyInput('column')
+        .appendField('Select column')
+        .appendField(new Blockly.FieldTextInput('column_name'), 'column_name');
+    this.appendDummyInput()
+        .appendField('of DataFrame')
+        .appendField(new Blockly.FieldVariable('df'), 'df_name');
+    this.setOutput(true);
+    this.setInputsInline(false);
+    this.setTooltip('Select a specific column of a DataFrame.');
+    this.setColour(200);
+  }
+};
+pythonGenerator.forBlock['select_column'] = function(block) {
+  const column_name = block.getFieldValue('column_name') || 'column_name';
+  const df_name = block.getFieldValue('df_name') || 'df';
+  const getVar = block.workspace.getVariableById(df_name);
+  const Var = getVar ? getVar.name : 'undefined';  
+  return [`${Var}['${column_name}']`, pythonGenerator.ORDER_ATOMIC];
+};
+
 /* Slice iterable */
 Blockly.Blocks['slice'] = {
   init: function() {

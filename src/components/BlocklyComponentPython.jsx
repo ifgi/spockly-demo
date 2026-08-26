@@ -103,9 +103,11 @@ const BlocklyComponent = ({ setCode, isDarkMode, onUploadClick, workspaceRef }) 
                 <block type="func_download"></block>
                 <block type="sampleDataB"></block>
                 <block type="read_file"></block>
+                <block type="load_sensebox"></block>
             </category>
             <category name="${Blockly.Msg.Categories["DATA_MANIPULATION"]}" colour="#0396c1">
-              <block type="convert_column"></block>        
+              <block type="convert_column"></block>   
+              <block type="select_column"></block>     
               <block type="data_shape"></block>
               <block type="slice"></block>
               <block type="add_object"></block>
@@ -146,6 +148,7 @@ const BlocklyComponent = ({ setCode, isDarkMode, onUploadClick, workspaceRef }) 
             <block type="max"></block>
             <block type="min"></block>
             <block type="sum"></block>
+            <block type="quantile"></block>
           </category>
 
           <category name="${Blockly.Msg.Categories["VARIABLES"]}" custom="VARIABLE" colour="#A65E2E"></category>
@@ -246,9 +249,11 @@ const BlocklyComponent = ({ setCode, isDarkMode, onUploadClick, workspaceRef }) 
               <block type="load_json"></block>
               <block type="request_json_data"></block>
               <block type="load_raster"></block>
+              <block type="load_sensebox"></block>
             </category>
             <category name="${Blockly.Msg.Categories["DATA_MANIPULATION"]}" colour="#0396c1">
               <block type="convert_column"></block>
+              <block type="select_column"></block>
               <block type="convert_np_to_pd"></block>          
               <block type="data_shape"></block>
               <block type="slice"></block>
@@ -428,6 +433,7 @@ const BlocklyComponent = ({ setCode, isDarkMode, onUploadClick, workspaceRef }) 
             <block type="max"></block>
             <block type="min"></block>
             <block type="sum"></block>
+            <block type="quantile"></block>
           </category>
 
           <category name="${Blockly.Msg.Categories["VARIABLES"]}" custom="VARIABLE" colour="#A65E2E"></category>
@@ -659,7 +665,7 @@ const BlocklyComponent = ({ setCode, isDarkMode, onUploadClick, workspaceRef }) 
       console.error("Blockly workspace is not initialised.");
       return;
     }
-    var libs = "", np, pd, gpd, sns, plt, requests, os, def_download, px, folium, interpol_idw, interpol_ppv, geodes, point, line, polyg, multipolyg, box, kde;
+    var libs = "", np, pd, gpd, sns, plt, requests, os, def_download, def_sensebox, px, folium, interpol_idw, interpol_ppv, geodes, point, line, polyg, multipolyg, box, kde;
     var pythonCode = pythonGenerator.workspaceToCode(workspaceRef.current);
     if(~pythonCode.indexOf('np.')) np = true;
     if(~pythonCode.indexOf('pd.')) pd = true;
@@ -669,6 +675,7 @@ const BlocklyComponent = ({ setCode, isDarkMode, onUploadClick, workspaceRef }) 
     if(~pythonCode.indexOf('requests.')) requests = true;
     if(~pythonCode.indexOf('os.')) os = true;
     if(~pythonCode.indexOf('download(')) def_download = true;
+    if(~pythonCode.indexOf('sensebox(')) def_sensebox = true;
     if(~pythonCode.indexOf('px.')) px = true;
     if(~pythonCode.indexOf('folium.')) folium = true;
     if(~pythonCode.indexOf('idw_interpolation(')) interpol_idw = true;
@@ -697,6 +704,17 @@ const BlocklyComponent = ({ setCode, isDarkMode, onUploadClick, workspaceRef }) 
                                         '\t\t\t\tfor chunk in r.iter_content(chunk_size=8192):\n' +
                                             '\t\t\t\t\tf.write(chunk)\n' + 
                                 '\t\tprint("Downloaded \'" + filename + "\'")\n\n' : '';
+    libs += def_sensebox ? 'import requests\n' +
+                            'import os\n' +
+                            'import json\n' +
+                            'import urllib.request as urllib\n' +
+                            'def load_sensebox(url):\n' +
+                            '\twith requests.get(url, stream=True, allow_redirects=True) as r:\n' +
+                            '\t\tfilename = r.headers["content-disposition"][21:]\n' + 
+                            '\t\twith open(filename, "wb") as f:\n' + 
+                            '\t\t\tfor chunk in r.iter_content(chunk_size=8192):\n' +
+                            '\t\t\t\tf.write(chunk)\n' +
+                            '\t\treturn filename\n' : '';
     libs += px ? 'import plotly.express as px\n' : '';
     libs += folium ? 'import folium\n' : '';
     libs += geodes ? "from geopy.distance import geodesic\n" : "";

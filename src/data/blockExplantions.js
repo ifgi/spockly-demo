@@ -608,6 +608,19 @@ const blockDescriptions = {
   },
 
   /* Python version */
+  quantile: {
+    infoText: "Compute quantiles at given probabilities.",
+    functions: ["np.quantile()"],
+  },
+  select_column: {
+    infoText: "Select a specific column of a dataframe.",
+    functions: [],
+  },
+  load_sensebox: {
+    infoText: "Get the CSV file of SenseBox data for specific box id, phenomenon & timestamps.\
+    The period of time starts on the from-date day at 00:00:00 and ends on the to-date day at 23:59:59.",
+    functions: ["pd.read_csv()", "get.requests()"],
+  },
   histogram: {
     infoText: "Plot a histogram.",
     functions: ["plt.hist()"],

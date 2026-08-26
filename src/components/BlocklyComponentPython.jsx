@@ -136,14 +136,8 @@ const BlocklyComponent = ({ setCode, isDarkMode, onUploadClick, workspaceRef }) 
                 </block>
               </value>
             </block>
-            <block type="subplots"></block>
-            
-            <!-- W.I.P.
-            <block type="export_png"></block>
-            -->
-
           </category>
-
+            
           <category name="${Blockly.Msg.Categories["STATISTICS"]}" colour="#05a219">
             <block type="mean"></block>
             <block type="median"></block>
@@ -304,53 +298,6 @@ const BlocklyComponent = ({ setCode, isDarkMode, onUploadClick, workspaceRef }) 
           <category name="${Blockly.Msg.Categories["VISUALISATION"]}" colour="#b12222">
             <block type="create_list_XCoords"></block>
             <block type="create_list_YCoords"></block>
-            <block type="global_plot">
-              <value name="legend">
-                <block type="list_create">
-                  <value name="element_0">
-                    <block type="text">
-                      <field name="TEXT">Legend</field>
-                    </block>
-                  </value>
-                </block>
-              </value>
-              <value name="sizes">
-                <block type="list_create">
-                  <value name="element_0">
-                    <block type="math_number">
-                      <field name="NUM">100</field>
-                    </block>
-                  </value>
-                </block>
-              </value>
-              <value name="labels">
-                <block type="list_create">
-                  <value name="element_0">
-                    <block type="text">
-                      <field name="TEXT">Value 1</field>
-                    </block>
-                  </value>
-                </block>
-              </value>
-              <value name="heights">
-                <block type="list_create">
-                  <value name="element_0">
-                    <block type="math_number">
-                      <field name="NUM">10</field>
-                    </block>
-                  </value>
-                </block>
-              </value>
-              <value name="data">
-                <block type="list_create">
-                  <value name="element_0">
-                    <block type="math_number">
-                      <field name="NUM">1</field>
-                    </block>
-                  </value>
-                </block>
-              </value>
-            </block>
             <block type="plot">
               <value name="Legend">
                 <block type="list_create">
@@ -471,11 +418,6 @@ const BlocklyComponent = ({ setCode, isDarkMode, onUploadClick, workspaceRef }) 
               </value>
             </block>
             <block type="subplots"></block>
-            
-            <!-- W.I.P.
-            <block type="export_png"></block>
-            -->
-
           </category>
 
           <category name="${Blockly.Msg.Categories["STATISTICS"]}" colour="#05a219">
